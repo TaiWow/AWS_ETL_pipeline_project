@@ -1,19 +1,19 @@
 version: "3.8"
 services:
   db:
-    image: mysql:latest
-    container_name: mysql_container_etl
+    image: postgres:latest
+    container_name: postgres_container_etl
     restart: always
     environment:
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: "${mysql_pass}"
-      MYSQL_DATABASE: "${mysql_db}"
+      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DB: "${postgres_db}"
+      POSTGRES_USER: "${postgres_user}"
     ports:
-      - "3307:3306"  # Ensure this port is not in use
+      - "5432:5432"  # Ensure this port is not in use
     volumes:
       - type: volume
         source: my_db
-        target: /var/lib/mysql
+        target: /var/lib/postgresql/data
   adminer:
     image: adminer
     container_name: adminer_container_etl
