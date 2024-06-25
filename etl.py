@@ -15,4 +15,15 @@ def csv_to_list(list, path, fieldnames):
 
 leeds_data = csv_to_list(data_list, 'leeds.csv', order)
 for dict in leeds_data:
-    print(dict)
+    #print(dict)
+    print(f"Transaction Time: {dict['datetime']}")
+    print(f"Location: {dict['location']}")
+    print(f"Product: {dict['products']}, Price: {dict['total_spending']}")
+    print(f"Payment Method: {dict['CASH/CARD']}")
+    print("-" * 30)
+  
+
+# Extract data from CSV file
+
+
+# Print the formatted data
