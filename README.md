@@ -1,4 +1,4 @@
-# final-project
+# Final-project
 ## About
 
 This project does blah blah

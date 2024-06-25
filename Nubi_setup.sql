@@ -18,7 +18,6 @@ PRIMARY KEY (Transaction_id)
 
 CREATE TABLE Customers (
 Customer_id INT NOT NULL AUTO_INCREMENT,
-Customer_name VARCHAR(100) NOT NULL,
 Customer_location VARCHAR(100) NOT NULL,
 PRIMARY KEY (Transaction_id)
 );
