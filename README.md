@@ -26,7 +26,7 @@ Team Members
 Haaris H
 Byron S
 Taiwo A
-Mujtaba m
+Mujtaba M
 
 Database Schema Model
 
