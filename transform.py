@@ -14,18 +14,23 @@ def csv_to_list(list, path, fieldnames):
     return list
 
 def transform_data(list_of_dicts):
+    # inititialize an empty list for transformaed data
     transformed_data = []
     for data_dict in list_of_dicts:
+        # itertate and extract the transaction time, location and payment from list_of_dicts
         transaction_time = data_dict['transaction_time']
         location = data_dict['location']
         payment_method = data_dict['payment_method']
         
+        # split the product items strings  into indiviual lists 
         items = data_dict['items'].split(',')
         for item in items:
+            # split the items into product and price 
             product_name, product_price = item.rsplit('-', 1)
-            product_name = product_name.strip()
-            product_price = float(product_price.strip())
+            product_name = product_name.strip() # remove trailing spaces 
+            product_price = float(product_price.strip()) # strip spaces and convert string to float 
             
+            # create new dictinry and append new dictionary with transfromed data 
             transformed_data.append({
                 'transaction_time': transaction_time,
                 'location': location,
