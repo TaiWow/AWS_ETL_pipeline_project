@@ -1,33 +1,35 @@
-CREATE DATABASE IF NOT EXISTS Nubi_project;
+-- Create the database if it does not exist (run this separately)
+CREATE DATABASE Nubi_project;
 
+-- Connect to the Nubi_project database
+-- In Adminer, select the database from a dropdown then run the below code
+
+-- Create the Products table
 CREATE TABLE IF NOT EXISTS Products (
-Product_id INT NOT NULL AUTO_INCREMENT,
-Product_name VARCHAR(100) NOT NULL,
-Product_price DECIMAL(10,2) NOT NULL,
-PRIMARY KEY (Product_id),
+    Product_id SERIAL PRIMARY KEY,
+    Product_name VARCHAR(100) NOT NULL,
+    Product_price DECIMAL(10,2) NOT NULL
 );
 
+-- Create the Transactions table
 CREATE TABLE IF NOT EXISTS Transactions (
-Transaction_id INT NOT NULL AUTO_INCREMENT,
-Transaction_date DATE NOT NULL,
-Transaction_time TIME NOT NULL,
-Total_spent DECIMAL(10,2) NOT NULL,
-PRIMARY KEY (Transaction_id),
+    Transaction_id SERIAL PRIMARY KEY,
+    Transaction_date DATE NOT NULL,
+    Transaction_time TIME NOT NULL,
+    Total_spent DECIMAL(10,2) NOT NULL
 );
 
+-- Create the Customers table
 CREATE TABLE IF NOT EXISTS Customers (
-Customer_id INT NOT NULL AUTO_INCREMENT,
-Customer_location VARCHAR(100) NOT NULL,
-PRIMARY KEY (Customer_id),
+    Customer_id SERIAL PRIMARY KEY,
+    Customer_location VARCHAR(100) NOT NULL
 );
 
+-- Create the Orders table
 CREATE TABLE IF NOT EXISTS Orders (
-Order_id INT NOT NULL AUTO_INCREMENT,
-Product_id INT NOT  NULL,
-Transaction_id INT NOT NULL,
-PRIMARY KEY (Order_id),
-FOREIGN KEY (Product_id) REFERENCES Products(Product_id),
-FOREIGN KEY (Transaction_id) REFERENCES Transactions(Transaction_id),
+    Order_id SERIAL PRIMARY KEY,
+    Product_id INT NOT NULL,
+    Transaction_id INT NOT NULL,
+    FOREIGN KEY (Product_id) REFERENCES Products(Product_id),
+    FOREIGN KEY (Transaction_id) REFERENCES Transactions(Transaction_id)
 );
-
-
