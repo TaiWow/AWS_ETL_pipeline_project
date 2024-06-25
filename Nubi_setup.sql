@@ -1,9 +1,8 @@
-CREATE DATABASE IF NOT EXIST Nubi_project;
+CREATE DATABASE IF NOT EXISTS Nubi_project;
 
 CREATE TABLE Products (
 Product_id INT NOT NULL AUTO_INCREMENT,
 Product_name VARCHAR(100) NOT NULL,
-Product_size VARCHAR(100) NOT NULL,
 Product_price DECIMAL(10,2) NOT NULL,
 PRIMARY KEY (Product_id)
 );
