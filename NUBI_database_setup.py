@@ -1,6 +1,7 @@
 import pymysql
 import os
 from dotenv import load_dotenv
+import csv
 
 # Load environment variables from .env file
 load_dotenv()
@@ -70,3 +71,11 @@ except Exception as ex:
 
 # Leave this line here!
 print('All done!')
+
+#Reads from a csv file to create a list of dictionaries
+def csv_to_list(list, path):
+    with open(path, 'r') as file:
+        csv_file = csv.DictReader(file)
+        for row in csv_file:
+            list.append(row) 
+    return list 
