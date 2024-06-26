@@ -49,6 +49,23 @@ def drop_table_if_exists(connection):
         print(f"Error dropping table: {e}")
         print_separator()
 
+
+def create_db_tables(connection):
+    try:
+        with connection.cursor() as cursor:
+            # Read SQL file
+            sql_file = open('nubi_setup.sql', 'r')
+            sql_commands = sql_file.read()
+
+            # Execute each command in the SQL file
+            cursor.execute(sql_commands)
+            connection.commit()
+            print("Tables created successfully.")
+
+    except Exception as e:
+        print(f"Error creating tables: {e}")
+
+
 def create_db_tables(connection):
     create_transaction_table = """
         CREATE TABLE IF NOT EXISTS transactions (
