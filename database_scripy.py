@@ -37,17 +37,17 @@ def setup_db_connection():
         print_separator()
         return None
 
-def drop_table_if_exists(connection):
-    drop_table_query = "DROP TABLE IF EXISTS transactions;"
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(drop_table_query)
-        connection.commit()
-        print("Existing table dropped successfully (if it existed).")
-        print_separator()
-    except psycopg2.Error as e:
-        print(f"Error dropping table: {e}")
-        print_separator()
+# def drop_table_if_exists(connection):
+#     drop_table_query = "DROP TABLE IF EXISTS transactions;"
+#     try:
+#         with connection.cursor() as cursor:
+#             cursor.execute(drop_table_query)
+#         connection.commit()
+#         print("Existing table dropped successfully (if it existed).")
+#         print_separator()
+#     except psycopg2.Error as e:
+#         print(f"Error dropping table: {e}")
+#         print_separator()
 
 
 def create_db_tables(connection):
@@ -64,29 +64,6 @@ def create_db_tables(connection):
 
     except Exception as e:
         print(f"Error creating tables: {e}")
-
-
-# def create_db_tables(connection):
-#     create_transaction_table = """
-#         CREATE TABLE IF NOT EXISTS transactions (
-#             id SERIAL PRIMARY KEY,
-#             transaction_date DATE,
-#             transaction_time TIME,
-#             location VARCHAR(50),
-#             product_name VARCHAR(100),
-#             product_price FLOAT,
-#             payment_method VARCHAR(20)
-#         );
-#     """
-#     try:
-#         with connection.cursor() as cursor:
-#             cursor.execute(create_transaction_table)
-#         connection.commit()
-#         print("Table created successfully.")
-#         print_separator()
-#     except psycopg2.Error as e:
-#         print(f"Error creating table: {e}")
-#         print_separator()
 
 def insert_transactions(connection, data_list):
     sql = """
@@ -169,7 +146,6 @@ if __name__ == '__main__':
     connection = setup_db_connection()
 
     if connection:
-        drop_table_if_exists(connection)
         create_db_tables(connection)
 
         data_list = csv_to_list('leeds.csv')

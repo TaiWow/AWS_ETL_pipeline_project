@@ -17,13 +17,12 @@ CREATE TABLE IF NOT EXISTS Transactions (
     Transaction_date DATE NOT NULL,
     Transaction_time TIME NOT NULL,
     Transaction_location VARCHAR(100) NOT NULL,
-    Total_spent DECIMAL(10,2) NOT NULL
 );
 
--- Create the Customers table
-CREATE TABLE IF NOT EXISTS Customers (
-    Customer_id SERIAL PRIMARY KEY,
-    Customer_location VARCHAR(100) NOT NULL
+-- Create the Location table
+CREATE TABLE IF NOT EXISTS Location (
+    Location_id SERIAL PRIMARY KEY,
+    Location VARCHAR(100) NOT NULL
 );
 
 -- Create the Orders table
