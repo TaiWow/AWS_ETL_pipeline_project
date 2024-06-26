@@ -66,27 +66,27 @@ def create_db_tables(connection):
         print(f"Error creating tables: {e}")
 
 
-def create_db_tables(connection):
-    create_transaction_table = """
-        CREATE TABLE IF NOT EXISTS transactions (
-            id SERIAL PRIMARY KEY,
-            transaction_date DATE,
-            transaction_time TIME,
-            location VARCHAR(50),
-            product_name VARCHAR(100),
-            product_price FLOAT,
-            payment_method VARCHAR(20)
-        );
-    """
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(create_transaction_table)
-        connection.commit()
-        print("Table created successfully.")
-        print_separator()
-    except psycopg2.Error as e:
-        print(f"Error creating table: {e}")
-        print_separator()
+# def create_db_tables(connection):
+#     create_transaction_table = """
+#         CREATE TABLE IF NOT EXISTS transactions (
+#             id SERIAL PRIMARY KEY,
+#             transaction_date DATE,
+#             transaction_time TIME,
+#             location VARCHAR(50),
+#             product_name VARCHAR(100),
+#             product_price FLOAT,
+#             payment_method VARCHAR(20)
+#         );
+#     """
+#     try:
+#         with connection.cursor() as cursor:
+#             cursor.execute(create_transaction_table)
+#         connection.commit()
+#         print("Table created successfully.")
+#         print_separator()
+#     except psycopg2.Error as e:
+#         print(f"Error creating table: {e}")
+#         print_separator()
 
 def insert_transactions(connection, data_list):
     sql = """

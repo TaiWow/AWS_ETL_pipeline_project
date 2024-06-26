@@ -1,5 +1,5 @@
 -- Create the database if it does not exist (run this separately)
-CREATE DATABASE Nubi_project;
+-- CREATE DATABASE Nubi_project;
 
 -- Connect to the Nubi_project database
 -- In Adminer, select the database from a dropdown then run the below code
@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS Transactions (
     Transaction_id SERIAL PRIMARY KEY,
     Transaction_date DATE NOT NULL,
     Transaction_time TIME NOT NULL,
+    Transaction_location VARCHAR(100) NOT NULL,
     Total_spent DECIMAL(10,2) NOT NULL
 );
 
