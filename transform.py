@@ -3,9 +3,9 @@ import csv
 # Extract
 
 data_list = []
-order = ['transaction_time', 'location', 'customer_name', 'items', 'total_amount', 'payment_method', 'card_number']
+order = ['date_time', 'location', 'customer_name', 'items', 'total_amount', 'payment_method', 'card_number']
 
-# Reads from a csv file to create a list of dictionaries, takes fieldnames as an argument
+# Reads from a CSV file to create a list of dictionaries, takes fieldnames as an argument
 def csv_to_list(list, path, fieldnames):
     with open(path, 'r') as file:
         csv_file = csv.DictReader(file, fieldnames=fieldnames)
@@ -14,24 +14,28 @@ def csv_to_list(list, path, fieldnames):
     return list
 
 def transform_data(list_of_dicts):
-    # inititialize an empty list for transformaed data
+    # Initialize an empty list for transformed data
     transformed_data = []
     for data_dict in list_of_dicts:
-        # itertate and extract the transaction time, location and payment from list_of_dicts
-        transaction_time = data_dict['transaction_time']
+        # Extract the transaction time, location, and payment method from list_of_dicts
+        date_time = data_dict['date_time']
+        transaction_date, transaction_time = date_time.split(' ', 1)
         location = data_dict['location']
         payment_method = data_dict['payment_method']
         
-        # split the product items strings  into indiviual lists 
+        # Split the product items strings into individual lists
         items = data_dict['items'].split(',')
         for item in items:
-            # split the items into product and price 
-            product_name, product_price = item.rsplit('-', 1)
-            product_name = product_name.strip() # remove trailing spaces 
-            product_price = float(product_price.strip()) # strip spaces and convert string to float 
+            # Split the items into product and price
+            product_name, product_price = item.rsplit(' - ', 1)
+          
+            product_name = product_name.strip()  # Remove trailing spaces
+          
+            product_price = float(product_price.strip())  # Strip spaces and convert string to float
             
-            # create new dictinry and append new dictionary with transfromed data 
+            # Create new dictionary and append new dictionary with transformed data
             transformed_data.append({
+                'transaction_date': transaction_date,
                 'transaction_time': transaction_time,
                 'location': location,
                 'product_name': product_name,
@@ -45,6 +49,7 @@ if __name__ == '__main__':
     transformed_data = transform_data(data_list)
     
     for entry in transformed_data:
+        print(f"Transaction Date: {entry['transaction_date']}")
         print(f"Transaction Time: {entry['transaction_time']}")
         print(f"Location: {entry['location']}")
         print(f"Product: {entry['product_name']}, Price: {entry['product_price']}")
