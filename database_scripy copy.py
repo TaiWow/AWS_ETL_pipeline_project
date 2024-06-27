@@ -135,13 +135,15 @@ def print_transformed_data(transformed_data):
 
 def insert_products(cursor,product_name, product_price):
     product_sql = """
-        INSERT INTO Products (product_name,product_price)
+        INSERT INTO products (product_name,product_price)
         VALUES (%s, %s)
         RETURNING product_id;
         """
-    cursor.excute(product_sql, (product_name, product_price))
+    cursor.execute(product_sql, (product_name, product_price))
     product_id = cursor.fetchone()
-    return product_id(0)
+
+    connection.commit() 
+    # return product_id(0)
 
 
 
@@ -150,6 +152,7 @@ if __name__ == '__main__':
     connection = setup_db_connection()
 
     if connection:
+        cursor = connection.cursor()
         
         data_list = csv_to_list('leeds.csv')
         if data_list:
@@ -157,6 +160,12 @@ if __name__ == '__main__':
             transformed_data = split_date_and_time(transformed_data)
             transformed_data = split_items_into_list(transformed_data)
             
+            # print(transformed_data)
+            for dict in transformed_data:
+                for item in dict['items']:
+                    insert_products(cursor, item[0], item[1])
+    
+        cursor.close()
     
     
     
