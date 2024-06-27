@@ -22,6 +22,7 @@ def transform_data(list_of_dicts):
         transaction_date, transaction_time = date_time.split(' ', 1)
         location = data_dict['location']
         payment_method = data_dict['payment_method']
+        total_amount = data_dict['total_amount']
         
         # Split the product items strings into individual lists
         items = data_dict['items'].split(',')
@@ -43,12 +44,15 @@ def transform_data(list_of_dicts):
             'transaction_time': transaction_time,
             'location': location,
             'items': item_list,
-            'payment_method': payment_method
+            'payment_method': payment_method,
+            'total_amount': total_amount
+
         })
     return transformed_data
 
 if __name__ == '__main__':
     data_list = csv_to_list(data_list, 'leeds.csv', order)
+    data_list += csv_to_list(data_list, 'chesterfield_25-08-2021_09-00-00.csv', order)
     transformed_data = transform_data(data_list)
     
     for entry in transformed_data:
@@ -58,5 +62,6 @@ if __name__ == '__main__':
         for product_name, product_price in entry['items']:
             print(f"Products: {product_name}, {product_price}")
         print(f"Payment Method: {entry['payment_method']}")
+        print(f"Total Amount: {entry['total_amount']}")
         print("-" * 30)
 
