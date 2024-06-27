@@ -2,16 +2,15 @@ import csv
 
 # Extract
 
-data_list = []
-order = ['date_time', 'location', 'customer_name', 'items', 'total_amount', 'payment_method', 'card_number']
+def csv_to_list(path):
+    data_list = []
+    column_names  = ['date_time', 'location', 'customer_name', 'items', 'total_amount', 'payment_method', 'card_number']
 
-# Reads from a CSV file to create a list of dictionaries, takes fieldnames as an argument
-def csv_to_list(list, path, fieldnames):
     with open(path, 'r') as file:
-        csv_file = csv.DictReader(file, fieldnames=fieldnames)
+        csv_file = csv.DictReader(file, fieldnames=column_names)
         for row in csv_file:
-            list.append(row)
-    return list
+            data_list.append(row)
+    return data_list
 
 
 def remove_sensitive_data(list_of_dicts):
@@ -119,13 +118,7 @@ def split_items_into_list(list_of_dicts):
 #         })
 #     return transformed_data
 
-if __name__ == '__main__':
-    data_list = csv_to_list(data_list, 'leeds.csv', order)
-    # data_list += csv_to_list(data_list, 'chesterfield_25-08-2021_09-00-00.csv', order)
-    transformed_data = remove_sensitive_data(data_list)
-    transformed_data = split_date_and_time(transformed_data)
-    transformed_data = split_items_into_list(transformed_data)
-    
+def print_transformed_data(transformed_data):
     for entry in transformed_data:
         print(f"Transaction Date: {entry['transaction_date']}")
         print(f"Transaction Time: {entry['transaction_time']}")
@@ -135,4 +128,22 @@ if __name__ == '__main__':
         print(f"Payment Method: {entry['payment_method']}")
         print(f"Total Amount: {entry['total_amount']}")
         print("-" * 30)
+
+if __name__ == '__main__':
+    leeds_data = csv_to_list('leeds.csv')
+    #chesterfield_data = csv_to_list('chesterfield_25-08-2021_09-00-00.csv')
+    
+    transformed_data = remove_sensitive_data(leeds_data)
+    transformed_data = split_date_and_time(transformed_data)
+    transformed_data = split_items_into_list(transformed_data)
+    
+    #transformed_chesterfield_data = transform_data(chesterfield_data)
+    
+    print("Leeds Data:")
+    print_transformed_data(transformed_data)
+    
+    #print("Chesterfield Data:")
+    #print_transformed_data(transformed_chesterfield_data)
+
+ 
 
