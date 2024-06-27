@@ -38,13 +38,13 @@ def transform_data(list_of_dicts):
             item_list.append((product_name,product_price))
             
             # Create new dictionary and append new dictionary with transformed data
-    transformed_data.append({
-        'transaction_date': transaction_date,
-        'transaction_time': transaction_time,
-        'location': location,
-        'items': item_list,
-        'payment_method': payment_method
-            })
+        transformed_data.append({
+            'transaction_date': transaction_date,
+            'transaction_time': transaction_time,
+            'location': location,
+            'items': item_list,
+            'payment_method': payment_method
+        })
     return transformed_data
 
 if __name__ == '__main__':
