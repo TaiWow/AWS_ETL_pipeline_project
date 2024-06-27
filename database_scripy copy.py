@@ -160,10 +160,12 @@ if __name__ == '__main__':
             transformed_data = split_date_and_time(transformed_data)
             transformed_data = split_items_into_list(transformed_data)
             
-            # print(transformed_data)
+            item_list = []
             for dict in transformed_data:
                 for item in dict['items']:
-                    insert_products(cursor, item[0], item[1])
+                    if item not in item_list:
+                        insert_products(cursor, item[0], item[1])
+                        item_list.append(item)
     
         cursor.close()
     
