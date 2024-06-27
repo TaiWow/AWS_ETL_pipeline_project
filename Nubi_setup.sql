@@ -5,32 +5,34 @@
 -- In Adminer, select the database from a dropdown then run the below code
 
 -- Create the Products table
-CREATE TABLE IF NOT EXISTS Products (
-    Product_id SERIAL PRIMARY KEY,
-    Product_name VARCHAR(100) NOT NULL,
-    Product_price DECIMAL(10,2) NOT NULL
+CREATE TABLE IF NOT EXISTS products (
+    product_id SERIAL PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    product_price DECIMAL(10,2) NOT NULL
 );
 
 -- Create the Transactions table
-CREATE TABLE IF NOT EXISTS Transactions (
-    Transaction_id SERIAL PRIMARY KEY,
-    Transaction_date DATE NOT NULL,
-    Transaction_time TIME NOT NULL,
-    Transaction_location VARCHAR(100) NOT NULL,
+CREATE TABLE IF NOT EXISTS transactions (
+    transaction_id SERIAL PRIMARY KEY,
+    transaction_date DATE NOT NULL,
+    transaction_time TIME NOT NULL,
+    payment_method VARCHAR(100) NOT NULL,
+    transaction_location VARCHAR(100) NOT NULL,
+    total_spent DECIMAL (10,2) NOT NULL
 );
 
 -- Create the Location table
-CREATE TABLE IF NOT EXISTS Location (
-    Location_id SERIAL PRIMARY KEY,
-    Location VARCHAR(100) NOT NULL
+CREATE TABLE IF NOT EXISTS location (
+    location_id SERIAL PRIMARY KEY,
+    location_name VARCHAR(100) NOT NULL
 );
 
 -- Create the Orders table
-CREATE TABLE IF NOT EXISTS Orders (
-    Order_id SERIAL PRIMARY KEY,
-    Product_id INT NOT NULL,
-    Transaction_id INT NOT NULL,
-    Quantity INT NOT NULL,
-    FOREIGN KEY (Product_id) REFERENCES Products(Product_id),
-    FOREIGN KEY (Transaction_id) REFERENCES Transactions(Transaction_id)
+CREATE TABLE IF NOT EXISTS orders (
+    order_id SERIAL PRIMARY KEY,
+    product_id INT NOT NULL,
+    transaction_id INT NOT NULL,
+    quantity INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id)
 );
