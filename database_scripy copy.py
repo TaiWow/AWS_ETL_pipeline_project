@@ -145,8 +145,17 @@ def insert_products(cursor,product_name, product_price):
     connection.commit() 
     # return product_id(0)
 
-
-
+def insert_transaction(cursor, transaction_date, transaction_time, location_name, total_spent, payment_method):
+    transaction_sql = """
+        INSERT INTO transactions (transaction_date, transaction_time, location_name, total_spent, payment_method)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING transaction_id;
+    """
+    cursor.execute(transaction_sql, (transaction_date, transaction_time, location_name, total_spent, payment_method))
+    transaction_id = cursor.fetchone()
+    
+    connection.commit()
+    #return transaction_id
 
 if __name__ == '__main__':
     connection = setup_db_connection()
