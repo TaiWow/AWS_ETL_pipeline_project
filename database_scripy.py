@@ -37,18 +37,6 @@ def setup_db_connection():
         print_separator()
         return None
 
-# def drop_table_if_exists(connection):
-#     drop_table_query = "DROP TABLE IF EXISTS transactions;"
-#     try:
-#         with connection.cursor() as cursor:
-#             cursor.execute(drop_table_query)
-#         connection.commit()
-#         print("Existing table dropped successfully (if it existed).")
-#         print_separator()
-#     except psycopg2.Error as e:
-#         print(f"Error dropping table: {e}")
-#         print_separator()
-
 
 def create_db_tables(connection):
     try:
@@ -106,6 +94,54 @@ def csv_to_list(filename):
         print(f"Error reading CSV file: {e}")
         print_separator()
         return []
+    
+def insert_transactions(connection, data_list):
+    try:
+        with connection.cursor() as cursor:
+            for transaction in data_list:
+                # Insert into transactions table
+                transaction_sql = """
+                    INSERT INTO transactions (transaction_date, transaction_time, location, payment_method, total_spent)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING transaction_id;
+                """
+                cursor.execute(transaction_sql, (
+                    transaction['transaction_date'],
+                    transaction['transaction_time'],
+                    transaction['location'],
+                    transaction['payment_method'],
+                    transaction['total_amount']
+                ))
+                transaction_id = cursor.fetchone()[0]
+
+                # Insert into orders table
+                for item in transaction['items']:
+                    product_name, product_price = item
+                    # Fetch product_id from products table or insert if not exists
+                    product_sql = """
+                        INSERT INTO products (product_name, product_price)
+                        VALUES (%s, %s)
+                        ON CONFLICT (product_name) DO NOTHING
+                        RETURNING product_id;
+                    """
+                    cursor.execute(product_sql, (product_name, product_price))
+                    product_id = cursor.fetchone()
+                    if product_id:
+                        product_id = product_id[0]
+
+                    order_sql = """
+                        INSERT INTO orders (product_id, transaction_id, quantity)
+                        VALUES (%s, %s, %s);
+                    """
+                    cursor.execute(order_sql, (product_id, transaction_id, 1))  # Assuming quantity 1 for simplicity
+
+        connection.commit()
+        print('Rows inserted successfully.')
+        print_separator()
+
+    except psycopg2.Error as e:
+        print(f"Error inserting rows: {e}")
+        print_separator()
 
 def transform_data(list_of_dicts):
     transformed_data = []
