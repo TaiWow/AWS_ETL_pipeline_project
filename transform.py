@@ -25,22 +25,25 @@ def transform_data(list_of_dicts):
         
         # Split the product items strings into individual lists
         items = data_dict['items'].split(',')
+        item_list  =[]
         for item in items:
+            
+            
             # Split the items into product and price
             product_name, product_price = item.rsplit(' - ', 1)
           
             product_name = product_name.strip()  # Remove trailing spaces
           
             product_price = float(product_price.strip())  # Strip spaces and convert string to float
+            item_list.append((product_name,product_price))
             
             # Create new dictionary and append new dictionary with transformed data
-            transformed_data.append({
-                'transaction_date': transaction_date,
-                'transaction_time': transaction_time,
-                'location': location,
-                'product_name': product_name,
-                'product_price': product_price,
-                'payment_method': payment_method
+    transformed_data.append({
+        'transaction_date': transaction_date,
+        'transaction_time': transaction_time,
+        'location': location,
+        'items': item_list,
+        'payment_method': payment_method
             })
     return transformed_data
 
@@ -52,7 +55,8 @@ if __name__ == '__main__':
         print(f"Transaction Date: {entry['transaction_date']}")
         print(f"Transaction Time: {entry['transaction_time']}")
         print(f"Location: {entry['location']}")
-        print(f"Product: {entry['product_name']}, Price: {entry['product_price']}")
+        for product_name, product_price in entry['items']:
+            print(f"Products: {product_name}, {product_price}")
         print(f"Payment Method: {entry['payment_method']}")
         print("-" * 30)
 
