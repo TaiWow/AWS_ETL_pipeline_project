@@ -153,6 +153,15 @@ def insert_transaction(cursor, transaction_date, transaction_time, location_name
     """
     cursor.execute(transaction_sql, (transaction_date, transaction_time, location_name, total_spent, payment_method))
     transaction_id = cursor.fetchone()
+
+
+# orders function
+# def insert_orders(cursor, transaction_id, location_id, product_id, total_spent, payment_method):
+#     orders_sql = """
+# INSERT INTO orders (transaction_id,location_id, product_id, total_spent, payment_method)
+# VALUES (%s, %s, %s, %s, %s)
+# RETURNING order_id;
+#     """
     
     connection.commit()
     #return transaction_id
