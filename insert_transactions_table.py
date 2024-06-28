@@ -2,6 +2,8 @@
 import csv_transform
 import db_connection
 
+#insert_transctiobns._table.py
+
 
 def insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent):
    
@@ -39,7 +41,7 @@ def process_transactions(cursor, transformed_data):
             transaction_id = insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent)
             
             # if the transaction was inserted successfully, append the transaction_id to the list
-            if transaction_id is not None:
+            if transaction_id is not transaction_ids:
                 transaction_ids.append(transaction_id) 
        
         except KeyError as e:
@@ -62,25 +64,20 @@ if __name__ == '__main__':
 
     
     if connection:
-    
         cursor = connection.cursor()
-
-      
+        
         leeds_data = csv_transform.csv_to_list('leeds.csv')
         chesterfield_data = csv_transform.csv_to_list('chesterfield_25-08-2021_09-00-00.csv')
-        
-      
         combined_data = leeds_data + chesterfield_data
 
-  
         if combined_data:
-        
             transformed_data = csv_transform.remove_sensitive_data(combined_data)
             transformed_data = csv_transform.split_date_and_time(transformed_data) 
             transformed_data = csv_transform.split_items_into_list(transformed_data)
-            transaction_ids = process_transactions(cursor, transformed_data)
             
-           
+            
+            
+            transaction_ids = process_transactions(cursor, transformed_data)
             print(f"Successfully processed {len(transaction_ids)} transactions.")
 
             

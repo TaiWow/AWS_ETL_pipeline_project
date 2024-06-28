@@ -2,6 +2,8 @@
 import csv_transform  
 import db_connection  
 
+#insert_products_table.py
+
 def insert_product(cursor, product_name, product_price):
     
     # checks if product name already exists in the database

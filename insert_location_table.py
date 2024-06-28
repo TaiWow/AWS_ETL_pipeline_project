@@ -2,10 +2,11 @@
 import csv_transform
 import db_connection
 
+#insert_location_table.py
 
 def insert_location(cursor, location_name):
     # checks if location name already exists in the database
-    cursor.execute("SELECT 1 FROM location WHERE location_name = %s", (location_name,))
+    cursor.execute("SELECT 1 FROM Location WHERE location_name = %s", (location_name,))
     if cursor.fetchone() is not None:
         print(f"Location '{location_name}' already exists. Skipping......")
         return  # Exit the function without inserting
