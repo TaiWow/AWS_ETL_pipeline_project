@@ -23,7 +23,7 @@ def remove_sensitive_data(list_of_dicts):
             'date_time': data_dict['date_time'],
             'location': data_dict['location'],
             'items': data_dict['items'],
-            'total_amount': data_dict['total_amount'],
+            'total_spent': data_dict['total_spent'],
             'payment_method': data_dict['payment_method']
 
         })
@@ -44,7 +44,7 @@ def split_date_and_time(list_of_dicts):
             'transaction_time': transaction_time,
             'location': data_dict['location'],
             'items': data_dict['items'],
-            'total_amount': data_dict['total_amount'],
+            'total_spent': data_dict['total_spent'],
             'payment_method': data_dict['payment_method']
 
         })
