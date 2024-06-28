@@ -175,6 +175,14 @@ if __name__ == '__main__':
                     if item not in item_list:
                         insert_products(cursor, item[0], item[1])
                         item_list.append(item)
+                insert_transaction(
+                    cursor,
+                    dict['transaction_date'],
+                    dict['transaction_time'],
+                    dict['location'],
+                    dict['total_amount'],
+                    dict['payment_method']
+                )
     
         cursor.close()
     
