@@ -10,7 +10,6 @@ import insert_location_table
 def insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent):
     
     location_id = insert_location_table.insert_location(cursor, location_name)
-   
     check_sql = """
         SELECT 1 FROM Transactions 
         WHERE transaction_date = %s AND transaction_time = %s AND location_id = %s AND payment_method = %s
