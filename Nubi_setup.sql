@@ -22,19 +22,18 @@ CREATE TABLE IF NOT EXISTS Transactions (
     transaction_id SERIAL PRIMARY KEY,
     transaction_date DATE NOT NULL,
     transaction_time TIME NOT NULL,
-    location_name VARCHAR(100) NOT NULL,
+    location_id INT NOT NULL,
     total_spent DECIMAL(10, 2) NOT NULL,
-    payment_method VARCHAR(20) NOT NULL
+    payment_method VARCHAR(20) NOT NULL,
+    FOREIGN KEY (location_id) REFERENCES Location(location_id)
 );
 
 -- Create the Orders table
 CREATE TABLE IF NOT EXISTS Orders (
     order_id SERIAL PRIMARY KEY,
     transaction_id INT NOT NULL,
-    location_id INT NOT NULL,
     product_id INT NOT NULL,
     FOREIGN KEY (transaction_id) REFERENCES Transactions(transaction_id),
     FOREIGN KEY (product_id) REFERENCES Products(product_id),
-    FOREIGN KEY (location_id) REFERENCES Location(location_id)
 );
 
