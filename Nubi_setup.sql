@@ -33,7 +33,6 @@ CREATE TABLE IF NOT EXISTS Orders (
     transaction_id INT NOT NULL,
     location_id INT NOT NULL,
     product_id INT NOT NULL,
-    total_spent DECIMAL(10, 2) NOT NULL,
     FOREIGN KEY (transaction_id) REFERENCES Transactions(transaction_id),
     FOREIGN KEY (product_id) REFERENCES Products(product_id),
     FOREIGN KEY (location_id) REFERENCES Location(location_id)
