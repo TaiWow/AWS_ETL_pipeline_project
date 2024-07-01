@@ -33,4 +33,4 @@ Our service ensures customer privacy (names, card number, etc.)
 
 ## Database Schema Model
 
-![databse_schema_model](database_schema_model.png)
+![database_schema_model](database_schema_model.png)
