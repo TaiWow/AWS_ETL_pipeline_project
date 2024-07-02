@@ -16,7 +16,9 @@ def insert_transaction(cursor, transaction_date, transaction_time, location_name
     """
     cursor.execute(check_sql, (transaction_date, transaction_time, location_id, payment_method))
     if cursor.fetchone() is not None:
-        return None
+        cursor.execute("SELECT transaction_id FROM Transactions WHERE transaction_date = %s AND transaction_time = %s AND location_id = %s AND payment_method = %s", (transaction_date, transaction_time, location_id, payment_method))
+        transaction_id = cursor.fetchone()[0]
+        return transaction_id
 
     insert_sql = """
         INSERT INTO Transactions (transaction_date, transaction_time, location_id, payment_method, total_spent) VALUES (%s, %s, %s, %s, %s)

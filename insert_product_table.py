@@ -11,7 +11,9 @@ def insert_product(cursor, product_name, product_price):
     if cursor.fetchone() is not None:
         print(f"Product '{product_name}' already exists. Skipping......")
         print("---"*30)
-        return  # exit the function without inserting if the product  exists
+        cursor.execute("SELECT product_id FROM Products WHERE product_name = %s", (product_name,))
+        product_id = cursor.fetchone()[0]
+        return product_id  # exit the function without inserting if the product  exists
 
     product_sql = """
         INSERT INTO Products (product_name, product_price) VALUES (%s, %s)

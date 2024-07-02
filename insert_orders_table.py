@@ -1,9 +1,13 @@
 import csv_transform
 import db_connection 
+from insert_product_table import insert_product
+from insert_transactions_table import insert_transaction
 
 
-def insert_order(cursor, transaction_id, product_id):
+def insert_order(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent, item):
     
+    product_id = insert_product(cursor, item[0], item[1])
+    transaction_id = insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent)
     check_sql = """
         SELECT 1 FROM Orders 
         WHERE transaction_id = %s AND product_id = %s
@@ -27,18 +31,17 @@ def process_orders(cursor, transformed_data):
     order_ids = []
     for data_dict in transformed_data:
         try:
-            # Extract transaction_id and product_ids from the data dictionary
-            transaction_id = data_dict['transaction_id']
-            products = data_dict.get('products', [])  
+            # extracting transaction  from the data dictionary
+            transaction_date = data_dict['transaction_date']
+            transaction_time = data_dict['transaction_time']
+            location_name = data_dict['location']
+            payment_method = data_dict['payment_method']
+            total_spent = float(data_dict['total_spent'])
 
-            if not products:
-                print(f"No products found for transaction_id {transaction_id}, skipping entry.")
-                continue
 
-            for product_id in products:
-                order_id = insert_order(cursor, transaction_id, product_id)
-                if order_id is not None:
-                    order_ids.append(order_id)
+            for item in data_dict['items']:
+                insert_order(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent, item)
+
 
         except KeyError as e:
             print(f"Missing key {str(e)}, skipping entry: {data_dict}")
