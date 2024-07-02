@@ -11,9 +11,7 @@ def insert_product(cursor, product_name, product_price):
     if cursor.fetchone() is not None:
         print(f"Product '{product_name}' already exists. Skipping......")
         print("---"*30)
-        cursor.execute("SELECT product_id FROM Products WHERE product_name = %s", (product_name,))
-        product_id = cursor.fetchone()[0]
-        return product_id  # exit the function without inserting if the product  exists
+        return   # exit the function without inserting if the product  exists
 
     product_sql = """
         INSERT INTO Products (product_name, product_price) VALUES (%s, %s)
@@ -40,6 +38,13 @@ def process_products_list(cursor, transformed_data):
     
     cursor.connection.commit()
 
+def get_product_id(cursor, product_name):
+    # checks if product name already exists in the database
+    cursor.execute("SELECT 1 FROM products WHERE product_name = %s", (product_name,))
+    if cursor.fetchone() is not None:
+        cursor.execute("SELECT product_id FROM Products WHERE product_name = %s", (product_name,))
+        product_id = cursor.fetchone()[0]
+        return product_id
 
 
 if __name__ == '__main__':

@@ -9,9 +9,7 @@ def insert_location(cursor, location_name):
     cursor.execute("SELECT 1 FROM Location WHERE location_name = %s", (location_name,))
     if cursor.fetchone() is not None:
         print(f"Location '{location_name}' already exists. Skipping......")
-        cursor.execute("SELECT location_id FROM Location WHERE location_name = %s", (location_name,))
-        location_id = cursor.fetchone()[0]
-        return location_id # Exit the function without inserting
+        return  # Exit the function without inserting
 
     # Insert the location if it's unique and get the generated location_id
     cursor.execute("""
@@ -33,6 +31,13 @@ def process_locations(cursor, transformed_data):
     
     cursor.connection.commit()  
 
+def get_location_id(cursor, location_name):
+    # checks if location name already exists in the database
+    cursor.execute("SELECT 1 FROM Location WHERE location_name = %s", (location_name,))
+    if cursor.fetchone() is not None:
+        cursor.execute("SELECT location_id FROM Location WHERE location_name = %s", (location_name,))
+        location_id = cursor.fetchone()[0]
+        return location_id 
 
 
 

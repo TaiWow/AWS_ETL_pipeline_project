@@ -9,16 +9,14 @@ import insert_location_table
 
 def insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent):
     
-    location_id = insert_location_table.insert_location(cursor, location_name)
+    location_id = insert_location_table.get_location_id(cursor,location_name)
     check_sql = """
         SELECT 1 FROM Transactions 
         WHERE transaction_date = %s AND transaction_time = %s AND location_id = %s AND payment_method = %s
     """
     cursor.execute(check_sql, (transaction_date, transaction_time, location_id, payment_method))
     if cursor.fetchone() is not None:
-        cursor.execute("SELECT transaction_id FROM Transactions WHERE transaction_date = %s AND transaction_time = %s AND location_id = %s AND payment_method = %s", (transaction_date, transaction_time, location_id, payment_method))
-        transaction_id = cursor.fetchone()[0]
-        return transaction_id
+        return 
 
     insert_sql = """
         INSERT INTO Transactions (transaction_date, transaction_time, location_id, payment_method, total_spent) VALUES (%s, %s, %s, %s, %s)
@@ -61,6 +59,18 @@ def process_transactions(cursor, transformed_data):
     cursor.connection.commit()
     
     return transaction_ids
+
+def get_transaction_id(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent):
+    location_id = insert_location_table.get_location_id(cursor,location_name)
+    check_sql = """
+        SELECT 1 FROM Transactions 
+        WHERE transaction_date = %s AND transaction_time = %s AND location_id = %s AND payment_method = %s
+    """
+    cursor.execute(check_sql, (transaction_date, transaction_time, location_id, payment_method))
+    if cursor.fetchone() is not None:
+        cursor.execute("SELECT transaction_id FROM Transactions WHERE transaction_date = %s AND transaction_time = %s AND location_id = %s AND payment_method = %s", (transaction_date, transaction_time, location_id, payment_method))
+        transaction_id = cursor.fetchone()[0]
+        return transaction_id
 
 # Main block to execute the script
 if __name__ == '__main__':

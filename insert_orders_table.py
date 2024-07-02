@@ -1,13 +1,15 @@
 import csv_transform
 import db_connection 
 from insert_product_table import insert_product
+from insert_product_table import get_product_id
 from insert_transactions_table import insert_transaction
+from insert_transactions_table import get_transaction_id
 
 
 def insert_order(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent, item):
     
-    product_id = insert_product(cursor, item[0], item[1])
-    transaction_id = insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent)
+    product_id = get_product_id(cursor, item[0])
+    transaction_id = get_transaction_id(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent)
     check_sql = """
         SELECT 1 FROM Orders 
         WHERE transaction_id = %s AND product_id = %s
