@@ -34,3 +34,11 @@ Our service ensures customer privacy (names, card number, etc.)
 ## Database Schema Model
 
 ![database_schema_model](database_schema_model.png)
+
+
+ # Sprint 1 - ETL
+
+To run ETL using files provided:
+
+ 1. Copy and Paste "Nubi_setup.sql" into adminer
+ 2. Run load.py
