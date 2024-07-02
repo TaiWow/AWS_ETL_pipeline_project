@@ -1,7 +1,7 @@
 # Final-project
 ## About
 
-This project is providing a service to *Super Cafe* in which we, *Nubi*, will Extract, Transform and Load data provided by the client into a database. Next...
+This project is providing a service to *Super Cafe* in which we, **Nubi**, will Extract, Transform and Load data provided by the client into a database. Next...
 
 ## Elevator pitch:
 *FOR* the super cafe owner 
