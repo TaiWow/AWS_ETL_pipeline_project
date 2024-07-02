@@ -1,25 +1,28 @@
 
 import csv_transform
 import db_connection
+from insert_location_table import insert_location
+import insert_location_table
 
 #insert_transctiobns._table.py
 
 
 def insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent):
-   
+    
+    location_id = insert_location_table.insert_location(cursor, location_name)
     check_sql = """
         SELECT 1 FROM Transactions 
-        WHERE transaction_date = %s AND transaction_time = %s AND location_name = %s AND payment_method = %s
+        WHERE transaction_date = %s AND transaction_time = %s AND location_id = %s AND payment_method = %s
     """
-    cursor.execute(check_sql, (transaction_date, transaction_time, location_name, payment_method))
+    cursor.execute(check_sql, (transaction_date, transaction_time, location_id, payment_method))
     if cursor.fetchone() is not None:
         return None
 
     insert_sql = """
-        INSERT INTO Transactions (transaction_date, transaction_time, location_name, payment_method, total_spent) VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO Transactions (transaction_date, transaction_time, location_id, payment_method, total_spent) VALUES (%s, %s, %s, %s, %s)
         RETURNING transaction_id;
     """
-    cursor.execute(insert_sql, (transaction_date, transaction_time, location_name, payment_method, total_spent))
+    cursor.execute(insert_sql, (transaction_date, transaction_time, location_id, payment_method, total_spent))
     transaction_id = cursor.fetchone()[0]
     return transaction_id
 

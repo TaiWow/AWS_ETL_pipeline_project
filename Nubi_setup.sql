@@ -34,6 +34,6 @@ CREATE TABLE IF NOT EXISTS Orders (
     transaction_id INT NOT NULL,
     product_id INT NOT NULL,
     FOREIGN KEY (transaction_id) REFERENCES Transactions(transaction_id),
-    FOREIGN KEY (product_id) REFERENCES Products(product_id),
+    FOREIGN KEY (product_id) REFERENCES Products(product_id)
 );
 
