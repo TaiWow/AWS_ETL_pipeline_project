@@ -1,7 +1,7 @@
 # Final-project
 ## About
 
-This project does blah blah
+This project is providing a service to *Super Cafe* in which we, *Nubi*, will Extract, Transform and Load data provided by the client into a database. Next...
 
 ## Elevator pitch:
 *FOR* the super cafe owner 
@@ -37,6 +37,8 @@ Our service ensures customer privacy (names, card number, etc.)
 
 
  # Sprint 1 - ETL
+
+In this sprint we complete the first stages of our project. By implementing ETL (Extract, Transform and Load) we stored data provided by the client into a Postgres SQL database.
 
 To run ETL using files provided:
 
