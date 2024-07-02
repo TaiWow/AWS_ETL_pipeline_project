@@ -3,6 +3,7 @@ import db_connection
 from insert_location_table import process_locations
 from insert_product_table import process_products_list
 from insert_transactions_table import process_transactions
+from insert_orders_table import process_orders
 from create_drop_db_tables import create_db_tables
 
 
@@ -31,6 +32,7 @@ if __name__ == '__main__':
             process_products_list(cursor, transformed_data)
             process_locations(cursor, transformed_data)
             process_transactions(cursor, transformed_data)
+            process_orders(cursor,transformed_data)
 
 
           
