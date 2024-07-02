@@ -17,18 +17,45 @@ def create_db_tables(connection):
 
     except Exception as e:
         print(f"Error creating tables: {e}")
+        
 
 
-
-       
-  
+def delete_all_tables(connection):
+    try:
+        with connection.cursor() as cursor:
+         
+            drop_tables_sql = """
+                DROP TABLE IF EXISTS Orders CASCADE;
+                DROP TABLE IF EXISTS Transactions CASCADE;
+                DROP TABLE IF EXISTS Products CASCADE;
+                DROP TABLE IF EXISTS Location CASCADE;
+            """
+        
+            cursor.execute(drop_tables_sql)
+            connection.commit()
+            
+            print("All tables dropped successfully.")
     
+    except psycopg2.Error as e:
+        print(f"Error dropping tables: {e}")
+
 if __name__ == '__main__':
     connection = db_connection.setup_db_connection()
-   
     
     if connection:
-        create_db_tables(connection)
+        try:
+           
+            delete_all_tables(connection)
+            create_db_tables(connection)
+        
+        
+        finally:
+            
+            connection.close()
+    
+       
+  
+
     
              
 
