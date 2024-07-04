@@ -30,6 +30,10 @@ def lambda_handler(event, context):
     transformed_data = split_date_and_time(transformed_data)
     transformed_data = split_items_into_list(transformed_data)
 
+    curr = None
+    conn = None
+
+
     try:
 
         nubi_redshift_settings = os.environ[ssm_env_var_name] or 'NOT_SET'
