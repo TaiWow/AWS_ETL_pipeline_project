@@ -47,8 +47,11 @@ To run ETL using files provided:
 
 # Sprint 2
 
- In this sprint we...fbjskc 
+ In this sprint we have set up an S3 bucket to store our data. We then ran a Lambda function which consisted of a modfified version of our ETL from last sprint to run the process in the cloud. This ETL loads our data into Amazon Redshift where client data will be stored.
 
  To run ETL in AWS:
 
- 1. 
+ 1. Create S3 bcuket and Lambda function (Configuration details followed from class exercise)
+ 2. Paste Nubi_Redshift_Setup.sql into Redshift query to setup databse tables
+ 3. Run modified ETL function via Lambda to Extract from S3, Transform and Load into Redshift
+ 4. Data should appear in Redshift...
