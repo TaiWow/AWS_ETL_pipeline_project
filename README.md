@@ -52,6 +52,6 @@ To run ETL using files provided:
  To run ETL in AWS:
 
  1. Create S3 bcuket and Lambda function (Configuration details followed from class exercise)
- 2. Paste Nubi_Redshift_Setup.sql into Redshift query to setup databse tables
+ 2. Paste Nubi_Redshift_Setup.sql (doesnt exist yet) into Redshift query to setup databse tables
  3. Run modified ETL function via Lambda to Extract from S3, Transform and Load into Redshift
  4. Data should appear in Redshift...
