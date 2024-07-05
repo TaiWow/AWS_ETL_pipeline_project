@@ -36,7 +36,7 @@ Our service ensures customer privacy (names, card number, etc.)
 ![database_schema_model](database_schema_model.png)
 
 
- # Sprint 1 - ETL
+# Sprint 1 - ETL
 
 In this sprint we complete the first stages of our project. By implementing ETL (Extract, Transform and Load) we stored data provided by the client into a Postgres SQL database.
 
@@ -44,3 +44,11 @@ To run ETL using files provided:
 
  1. Copy and Paste "Nubi_setup.sql" into adminer
  2. Run load.py
+
+# Sprint 2
+
+ In this sprint we...fbjskc 
+
+ To run ETL in AWS:
+
+ 1. 
