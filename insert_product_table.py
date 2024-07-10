@@ -48,6 +48,7 @@ if __name__ == '__main__':
                 process_products_list(cursor, transformed_data)
                 
             connection.commit()
+            print("Products updated and executed successfully.")
             
         except Exception as e:
             connection.rollback()

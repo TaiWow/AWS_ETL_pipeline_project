@@ -28,18 +28,28 @@ def insert_order(cursor, quantity, product_name, product_price, transaction_date
     
 def process_orders(cursor, transformed_data):
     for data_dict in transformed_data: 
-        product_name = data_dict['product_name']
-        product_price = data_dict['product_price']
-        quantity = data_dict['quantity']
-        transaction_date = data_dict['transaction_date']
-        transaction_time = data_dict['transaction_time']
-        location_name = data_dict['location']
-        payment_method = data_dict['payment_method']
-        total_spent = float(data_dict['total_spent'])
+        try:
+            
+            product_name = data_dict['product_name']
+            product_price = data_dict['product_price']
+            quantity = data_dict['quantity']
+            transaction_date = data_dict['transaction_date']
+            transaction_time = data_dict['transaction_time']
+            location_name = data_dict['location']
+            payment_method = data_dict['payment_method']
+            total_spent = float(data_dict['total_spent'])
         
-        insert_order(cursor, quantity, product_name, product_price, transaction_date, transaction_time, location_name, payment_method, total_spent)
-    
-    cursor.connection.commit()
+            insert_order(cursor, quantity, product_name, product_price, transaction_date, transaction_time, location_name, payment_method, total_spent)
+            
+            cursor.connection.commit()
+        
+        except KeyError as e:
+            print(f"Missing key {str(e)}, skipping entry: {data_dict}")
+            continue  
+
+        except Exception as e:
+            print(f"Error inserting order: {str(e)}")
+            continue
 
 
 
@@ -62,6 +72,7 @@ if __name__ == '__main__':
                 process_orders(cursor, transformed_data)
                 
             connection.commit()
+            print("Orders updated and executed successfully.")
             
         except Exception as e:
             connection.rollback()

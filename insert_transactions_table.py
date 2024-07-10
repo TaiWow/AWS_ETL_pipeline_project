@@ -30,16 +30,27 @@ def insert_transaction(cursor, transaction_date, transaction_time, location_name
     
 def process_transactions(cursor, transformed_data):
     for data_dict in transformed_data:
-        transaction_date = data_dict['transaction_date']
-        transaction_time = data_dict['transaction_time']
-        location_name = data_dict['location']
-        payment_method = data_dict['payment_method']
-        total_spent = float(data_dict['total_spent'])
-        
-        insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method,total_spent)
+        try:
     
-    cursor.connection.commit()
-
+            transaction_date = data_dict['transaction_date']
+            transaction_time = data_dict['transaction_time']
+            location_name = data_dict['location']
+            payment_method = data_dict['payment_method']
+            total_spent = float(data_dict['total_spent'])
+        
+            insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method,total_spent)
+            cursor.connection.commit()
+            
+        except KeyError as e:
+            print(f"Missing transaction data, skipping entry: {str(e)}")
+            continue  # Skip the current transaction
+        
+        # Handling any other exceptions that may occur during insertion
+        except Exception as e:
+            print(f"Error inserting transaction: {str(e)}")
+            continue  # Skip the current transaction
+    
+    
 
 
 if __name__ == '__main__':
@@ -61,6 +72,7 @@ if __name__ == '__main__':
                 process_transactions(cursor, transformed_data)
                 
             connection.commit()
+            print("transcanction load executed successfully.")
             
         except Exception as e:
             connection.rollback()

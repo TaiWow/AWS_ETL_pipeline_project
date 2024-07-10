@@ -45,6 +45,7 @@ if __name__ == '__main__':
                 process_locations(cursor, transformed_data)
                 
             connection.commit()
+            print("Locations updated and executed successfully.")
             
         except Exception as e:
             connection.rollback()

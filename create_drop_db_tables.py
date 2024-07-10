@@ -7,7 +7,7 @@ def create_db_tables(connection):
     try:
         with connection.cursor() as cursor:
             # Read SQL file
-            sql_file = open('nubi_setup.sql', 'r')
+            sql_file = open('nubi_postgres_setup.sql', 'r')
             sql_commands = sql_file.read()
 
             # Execute each command in the SQL file
