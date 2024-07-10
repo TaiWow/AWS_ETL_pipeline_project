@@ -11,15 +11,13 @@ Read this whole file all the way through before starting any of the steps!
 
 ## EC2 Setup
 
-For setting up an AWS Virtual Machine (EC2) running Grafana, you should follow the same steps as in the AWS EC2 exercise.
-
 **Important** - _Nominate one person to do the setup - they will end up with the SSH key._
 
 ### Security group for your EC2
 
-Make a new team security group as per `aws/exercises/aws-exercises.md` -> `### Security Group Setup` section.
+Before creating your own EC2 instance, you will need to create a [security group]
 
-_BUT_ - When making the security group, do this:
+BUT_ - When making the security group, do this:
 
 1. Use your team name e.g. `your-team-sg`
 1. Limit all Inbound access to your teams IP addresses only
@@ -27,9 +25,79 @@ _BUT_ - When making the security group, do this:
         1. Select `SSH` for `Type` and `My IP` for `Source` (to make a rule for port 22)
         1. Select `HTTP` for `Type` and `My IP` for `Source` (to make a rule for port 80)
 
-### Your EC2
+1. Go to `EC2` page by using the search bar
+1. On the left-hand side under `Network & Security`,
+    1. select `Security Groups`
+    1. and then select `Create security group`
+1. Give your security group a unique name (e.g. `your-name-sg`) and a description (e.g. `Your-Name SG`)
+1. Change the VPC to the `RedshiftVPC`
+    1. Delete the contents of the `VPC` box - it should then offer you a dropdown list - select `RedshiftVPC`
+    1. If not, type `Red` in the box - it should find the one named `RedshiftVPC`
+1. Under `Inbound rules`, select `Add rule`
+    1. Rule 1: Select `SSH` for `Type` and `My IP` for `Source`
+    1. Rule 2: Select `HTTP` for `Type` and input `0.0.0.0/0` in the text field to the right of `Source` and `Anywhere-IPv4` for `Source`
+1. Under `Outbound rules`,
+    1. Rule 1: Select `HTTP` as the type and input `0.0.0.0/0` in the text field to the right of `Destination`
+    1. Rule 2: Select `HTTPS` as the type and input `0.0.0.0/0` in the text field to the right of `Destination`
+1. Under the Tags section add a tag with key `Name` and value `your-name-sg`
+1. Select `Create security group` to finish
 
-Make a new team EC2 as per `aws/exercises/aws-exercises.md` -> `### EC2 Instance Setup` section.
+
+### EC2 Instance Setup
+
+Now let's set an instance up.
+
+1. Go to EC2 and select `Launch Instance`
+1. In the `Names and tags` section,
+    1. add a name for your EC2 instance ( e.g `Your-Name Web Server`)
+1. In the `Application and OS Images` section,
+    1. select `Amazon Linux 2023 AMI`
+1. In the `Instance type` section,
+    1. select an instance type of `t2.micro`
+1. In the `Key pair` section,
+    1. Click on the `Create new key pair` link, a pop up dialogue will appear
+    1. Do so by entering a key pair name (e.g  `yourname-key`)
+    1. Keep key file format as .pem and click the `Create key pair` button
+    1. The key will download automatically to you downloads folder
+    1. The popup will close
+    1. Move the downloaded key file `yourname-key.pem` into a suitable directory
+        1. **DO NOT** put this in any Git folder - this would be like adding a password to git, but worse, which is **VERY BAD**
+    1. The name should autofill in the `Key pair` section
+1. In the `Network Settings` section,
+    1. Click the `Edit` button on the right hand side
+    1. Change the `VPC` to `RedshiftVPC`
+    1. And use the Subnet dropdown to change it to the `RedshiftPublicSubnet0` subnet
+    1. Under `Auto-assign Public IP`, select `Enable`
+    1. Under `Firewall(security group)`, select `Existing security group`
+    1. Under `Firewall(security group)`, use the Security groups dropdown to select the security group, you created earlier (e.g `your-name-sg`)
+1. In the `Configure storage` section,
+    1. Click the `Advanced` link on the top right
+    1. Click the drop-down arrow next to `Volume 1`
+    1. Under `Encrypted` select `Encrypted` from the dropdown
+    1. Leave everything else as is!
+1. In the `Advanced details` section,
+    1. Change the `IAM Instance profile` to `ec2-role`
+    1. Do not touch any other settings here
+1. Click on the orange button on the right hand side, to `Launch instance`
+1. Navigate to `Instances` and select the `Instance ID` value of your instance
+1. Wait for your instance to have an instance state of `Running` before moving on
+    1. This should only take about 30 seconds
+
+### Accessing the Instance
+
+Your instance has now been spun up and is ready to be accessed. Let's see how we can go about getting inside it:
+
+1. On your instance summary page, select `Connect` in the top-right of the webpage
+1. Select the `SSH Client` tab and copy the long `ssh` command under `Example:`
+
+Now follow the below steps on your terminal (use `wsl` if on Windows):
+
+1. Open a terminal in the folder your downloaded key file is in e.g. `yourname-key.pem`
+1. Run: `chmod 400 {name-of-key}.pem`
+1. Paste the `ssh` command you copied and hit enter
+1. You will be asked `Are you sure you want to continue connecting (yes/no/[fingerprint])?`, type `yes` and hit enter
+1. You should now be logged in!
+    1. Your terminal prompt should change to show you are inside the instance!
 
 1. Use the most recent AWS "Amazon Linux 2023" machine image (AMI)
 1. SSH into the instance with the SSH key you downloaded. DO NOT LOSE THIS KEY!
@@ -155,4 +223,8 @@ As team, think about what kind of monitoring metrics you can establish to displa
 
 You can now create dashboards by using the data from your Redshift database, using SQL.
 
-As a team think about what data from Redshift you want to display, for example, revenue per day or week, number of items sold per day, number of each type of drink sold in the last week, and so on. You wil have to create the SQL for this yourselves.
+As a team think about what data from Redshift you want to display, for example, revenue per day or week, number of items sold per day, number of each type of drink sold in the last week, and so on. You wil have to create the SQL for this yourselves.### 
+
+
+
+

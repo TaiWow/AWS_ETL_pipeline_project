@@ -59,44 +59,46 @@ To run ETL using files provided:
 
  # Sprint 3 
 
- In this sprint 
- ### Security Group Setup
+ This sprint focused on setting up a secure infrastructure and automating deployment processes. 
+ Key tasks 
+ - creating a dedicated security group  to restrict SSH and HTTP access to team IP addresses. 
+ - Setting up an EC2 instance,installatin and  configuration with Docker to host Grafana.
+ - Connections to CloudWatch and Redshift for monitoring Lambda and EC2 metrics. 
+ - viusalize Sales data metrics for stakeholders.
+ - automating deployments with CloudFormation and GitHub integration.(create GitHub Action and deploy via CloudFormation.)
+ 
+ ## Security Group Setup
 
-Before creating your own EC2 instance, you will need to create a [security group](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/working-with-security-groups.html). Security groups take control of the traffic that is allowed in and out of your instance. You can apply restrictions on port ranges and IP ranges. We will be restricting `SSH` access to your IP, but open `HTTP` to the world. This is bad practice, and so you would normally be much more restrictive in terms of what you allow in and out, but for the sake and simplicity of this exercise, we won't need to worry about that.
+*Create a new security group (team-sg) in AWS console.*
 
-1. Go to `EC2` page by using the search bar
-1. On the left-hand side under `Network & Security`,
-    1. select `Security Groups`
-    1. and then select `Create security group`
-1. Give your security group a unique name (e.g. `your-name-sg`) and a description (e.g. `Your-Name SG`)
-1. Change the VPC to the `RedshiftVPC`
-    1. Delete the contents of the `VPC` box - it should then offer you a dropdown list - select `RedshiftVPC`
-    1. If not, type `Red` in the box - it should find the one named `RedshiftVPC`
-1. Under `Inbound rules`, select `Add rule`
-    1. Rule 1: Select `SSH` for `Type` and `My IP` for `Source`
-    1. Rule 2: Select `HTTP` for `Type` and input `0.0.0.0/0` in the text field to the right of `Source` and `Anywhere-IPv4` for `Source`
-1. Under `Outbound rules`,
-    1. Rule 1: Select `HTTP` as the type and input `0.0.0.0/0` in the text field to the right of `Destination`
-    1. Rule 2: Select `HTTPS` as the type and input `0.0.0.0/0` in the text field to the right of `Destination`
-1. Under the Tags section add a tag with key `Name` and value `your-name-sg`
-1. Select `Create security group` to finish
+- When making the security group, do this:
+- Use your team name e.g. `your-team-sg`
+- Limit all Inbound access to teams IP addresses only
+    - For each person in your team:
+        - Select `SSH` for `Type` and `My IP` for `Source` (to make a rule for port 22)
+        -  Select `HTTP` for `Type` and `My IP` for `Source` (to make a rule for port 80)
 
+## EC2 Instance Setup:
+
+- Launch a new instance using "Amazon Linux 2023" AMI.
+- Assign the your-team-sg security group to the instance.
+- Download the SSH key and securely store it (do not commit to Git).
 
 ## Accessing the Instance
 
 - SSH Connection - on your instance summary page, select Connect and copy the SSH command.
 - Terminal Setup - Open a terminal in the directory containing your .pem file.
-- Run -  'chmod 400 yourname-key.pem'
+- Run -  'chmod 400 `yourname-key.pem`
 - Paste the SSH command and connect.
 - confirm the connection by typing yes when prompted.
 - terminal prompt should change to show you are inside the instance! ready to use it.
 
 ## Docker Setup
 
-1. Use the most recent AWS "Amazon Linux 2023" machine image (AMI)
-2. SSH into the instance with the SSH key you downloaded. DO NOT LOSE THIS KEY!
+- Use the most recent AWS "Amazon Linux 2023" machine image (AMI)
+- SSH into the instance with the SSH key you downloaded. DO NOT LOSE THIS KEY!
    **DO NOT** put this in any Git folder - this would be like adding a password to git, but worse, which is **VERY BAD**
-3. Then to install docker inside it you need to run this:
+- Then to install docker inside it you need to run this:
 ```sh
 sudo yum install docker -y
 sudo service docker start
@@ -105,35 +107,78 @@ sudo chkconfig docker on
 ```
 Run the following commands:The following steps are to ensure any changes you've made in Grafana are saved when you Stop/Pause your instance and Start it again.
 
-*SSH/Connect into the EC2 instance*
+- SSH/Connect into the EC2 instance
+- Configure docker Volume ensure the Grafana Docker image is not running
 
-```sh
-sudo yum install docker -y
-sudo service docker start
-sudo usermod -a -G docker ec2-user
-sudo chkconfig docker on
-```
-*Configure docker Volume ensure the Grafana Docker image is not running*
+`docker ps -a`  `docker stop <container-id>` `docker rm <container-id>`
 
-```sh
-docker ps -a
-docker stop <container-id>
-docker rm <container-id>
-```
+- Create a docker volume `docker volume create grafana-storage`
+- Verify docker volume has been created `docker volume ls`
+- Run the Grafana container `sudo docker run -d -p 80:3000 --rm --volume grafana-storage:/var/lib/grafana grafana/grafana`
+- Check container is running `docker ps -a`
+ -Verify Grafana site is running by going to the Instance's public IP address (check the EC2 page)
+- Now go to AWS and click `Stop Instance` to stop the instance
+- Select your instance and click the `Actions` drop-down -> `Instance settings` -> `Edit user data`
+- In the `Edit user data` page, ensure `Modify user data as text` is selected and then copy & paste the following into the text field:
 
-*Create a docker volume*
+```yaml
+Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
 
-```sh
-docker volume create grafana-storage
-```
-*Verify docker volume has been created*
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="cloud-config.txt"
 
-```sh
-docker volume ls
-```
-*Run the Grafana container*
+#cloud-config
+cloud_final_modules:
+- [scripts-user, always]
 
-```sh
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="userdata.txt"
+
+#!/bin/bash
 sudo docker run -d -p 80:3000 --rm --volume grafana-storage:/var/lib/grafana grafana/grafana
+--//--
 ```
-*Check container is running* `docker ps -a`
+
+- Click `Save`.Start your Instance again. Docker should now be running automaticallyVerify this by logging back in and running `docker ps -a`Also verify it by browsing to the Grafana site via the Instance's public IP address.
+
+## Setup Grafana users
+
+To create a new user login for each team member, navigate to `Server Admin --> Users --> New user` and begin creating unique users with _secure passwords_.
+
+## Connecting Grafana to CloudWatch
+
+ we need to connect a data source in order to generate some graphs and metrics.
+
+- In Grafana, navigate to `Connection --> Data Sources`. Select `Add data source`, search for `CloudWatch` and select.
+- Give it a name, or leave as default.
+- Leave other settings as default.
+- Set region to `eu-west-1`.
+- Select `Save & Test`. You should see a confirmation `Data source is working`.
+
+## Creating a Lambda metric
+
+Graphs and metrics for our Lambda - e.g. how many time it ran, how long it took, how many errors there were.
+
+- Create a new dashboard and add a new panel.
+- Select `CloudWatch` as the query type, and `CloudWatch Metrics` as the query mode.
+- Select `AWS Lambda` as the namespace, and `Invocations` as the metric name.
+- Add a new Dimension. Select `Function name` as the resource and select the dimension value as your teams ETL lambda.
+- Update the time query to be last 24 hours or 2/7 days if you need to go back that far to see data being graphed.
+
+
+## Connecting Grafana to Redshift
+
+- Install the "Amazon Redshift" plugin
+- Add a "Redshift" datasource
+- Leave the _assumed role_ blank (as it defaults to the role on EC2 instance)
+- Set default region to `eu-west-1`
+- Select the redshift cluster in "Cluster Identifier"
+- Add your team's database user and database name
+- You can now create dashboards by using the data from your Redshift database, using SQL.
