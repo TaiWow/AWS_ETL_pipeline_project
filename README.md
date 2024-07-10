@@ -93,9 +93,19 @@ Before creating your own EC2 instance, you will need to create a [security group
 
 ## Docker Setup
 
+1. Use the most recent AWS "Amazon Linux 2023" machine image (AMI)
+2. SSH into the instance with the SSH key you downloaded. DO NOT LOSE THIS KEY!
+   **DO NOT** put this in any Git folder - this would be like adding a password to git, but worse, which is **VERY BAD**
+3. Then to install docker inside it you need to run this:
+```sh
+sudo yum install docker -y
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+sudo chkconfig docker on
+```
 Run the following commands:The following steps are to ensure any changes you've made in Grafana are saved when you Stop/Pause your instance and Start it again.
 
-SSH/Connect into the EC2 instance 
+*SSH/Connect into the EC2 instance*
 
 ```sh
 sudo yum install docker -y
@@ -103,7 +113,7 @@ sudo service docker start
 sudo usermod -a -G docker ec2-user
 sudo chkconfig docker on
 ```
-*Configure Docker Volume ensure the Grafana Docker image is not running*
+*Configure docker Volume ensure the Grafana Docker image is not running*
 
 ```sh
 docker ps -a
@@ -111,12 +121,12 @@ docker stop <container-id>
 docker rm <container-id>
 ```
 
-*Create a Docker volume*
+*Create a docker volume*
 
 ```sh
 docker volume create grafana-storage
 ```
-*verify docker volume has been created*
+*Verify docker volume has been created*
 
 ```sh
 docker volume ls
@@ -126,3 +136,4 @@ docker volume ls
 ```sh
 sudo docker run -d -p 80:3000 --rm --volume grafana-storage:/var/lib/grafana grafana/grafana
 ```
+*Check container is running* `docker ps -a`
