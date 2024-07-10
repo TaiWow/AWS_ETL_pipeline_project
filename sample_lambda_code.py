@@ -1,4 +1,4 @@
-from connect_to_db import *
+from redshift_db_connection import *
 import os
 from load import perform_etl
 

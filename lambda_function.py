@@ -5,7 +5,7 @@ from datetime import datetime
 
 s3 = boto3.client('s3')
 
-
+# lambda function to extract csv data from s3 bucket event  and transform - ideally should be saved back ito a clean bucket
 def lambda_handler(event, context):
     for record in event['Records']:
         bucket_name = record['s3']['bucket']['name']

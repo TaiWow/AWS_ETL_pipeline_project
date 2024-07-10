@@ -4,6 +4,11 @@ Each team will need to make a Virtual Machine (EC2) in AWS - you will then set i
 
 Read this whole file all the way through before starting any of the steps!
 
+
+###    chmod 400 nubi-key.pem
+## SSH instance link 'ssh -i "nubi-key.pem" ec2-user@ec2-34-253-231-170.eu-west-1.compute.amazonaws.com'
+
+
 ## EC2 Setup
 
 For setting up an AWS Virtual Machine (EC2) running Grafana, you should follow the same steps as in the AWS EC2 exercise.

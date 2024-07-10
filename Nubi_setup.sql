@@ -38,3 +38,9 @@ CREATE TABLE IF NOT EXISTS Orders (
     FOREIGN KEY (product_id) REFERENCES Products(product_id)
 );
 
+--select t.transaction_date, count(o.product_id) as total quantity
+----from Orders as o
+--Left Join Transactions as t
+--ON t.transaction_id = o.transaction_id
+
+
