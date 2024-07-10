@@ -1,6 +1,7 @@
 
 import csv
 from datetime import datetime
+from collections import Counter
 
 
 
@@ -49,24 +50,31 @@ def split_date_and_time(list_of_dicts):
     return transformed_data
 
 
-def split_items_into_list(list_of_dicts):
+def split_items_and_count_quantity(list_of_dicts):
     transformed_data = []
     for data_dict in list_of_dicts:
         items = data_dict['items'].split(',')
+        item_counts = Counter()
         item_list = []
+        
         for item in items:
             product_name, product_price = item.rsplit(' - ', 1)
             product_name = product_name.strip()
             product_price = float(product_price.strip())
+            item_counts[product_name] += 1
             item_list.append((product_name, product_price))
-        transformed_data.append({
-            'transaction_date': data_dict['transaction_date'],  # Use transformed fields from previous step
-            'transaction_time': data_dict['transaction_time'],
-            'location': data_dict['location'],
-            'items': item_list,
-            'total_spent': data_dict['total_spent'],
-            'payment_method': data_dict['payment_method']
-        })
+        
+        for product_name, product_price in item_list:
+            transformed_data.append({
+                'transaction_date': data_dict['transaction_date'],
+                'transaction_time': data_dict['transaction_time'],
+                'location': data_dict['location'],
+                'product_name': product_name,
+                'product_price': product_price,
+                'quantity': item_counts[product_name],
+                'total_spent': float(data_dict['total_spent']),  
+                'payment_method': data_dict['payment_method']
+            })
     return transformed_data
 
 def print_transformed_data(transformed_data):
@@ -74,13 +82,14 @@ def print_transformed_data(transformed_data):
         print(f"Transaction Date: {entry['transaction_date']}")
         print(f"Transaction Time: {entry['transaction_time']}")
         print(f"Location: {entry['location']}")
-        for product_name, product_price in entry['items']:
-            print(f"Products: {product_name}, {product_price}")
+        print(f"Product Name: {entry['product_name']}")
+        print(f"Product Price: {entry['product_price']}")
+        print(f"Quantity: {entry['quantity']}")
+        print(f"Total Spent: {entry['total_spent']}")
         print(f"Payment Method: {entry['payment_method']}")
-        print(f"Total spent {entry['total_spent']}")
         print("-" * 30)
 
-        
+ 
     
 if __name__ == '__main__':
     leeds_data = csv_to_list('leeds.csv')
@@ -90,7 +99,7 @@ if __name__ == '__main__':
 
     transformed_data = remove_sensitive_data(combined_data)
     transformed_data = split_date_and_time(transformed_data)
-    transformed_data = split_items_into_list(transformed_data)
+    transformed_data = split_items_and_count_quantity(transformed_data)
 
  
     print_transformed_data(transformed_data)

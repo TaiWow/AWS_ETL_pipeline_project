@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS Orders (
     order_id SERIAL PRIMARY KEY,
     transaction_id INT NOT NULL,
     product_id INT NOT NULL,
+    quantity INT NOT NULL,
     FOREIGN KEY (transaction_id) REFERENCES Transactions(transaction_id),
     FOREIGN KEY (product_id) REFERENCES Products(product_id)
 );

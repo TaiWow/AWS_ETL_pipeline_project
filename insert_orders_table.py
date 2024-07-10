@@ -1,82 +1,72 @@
-import csv_transform
+import csv_transform   
 import db_connection 
 from insert_product_table import insert_product
-from insert_product_table import get_product_id
-from insert_transactions_table import insert_transaction
-from insert_transactions_table import get_transaction_id
+from insert_transactions_table import insert_transaction  
 
 
-def insert_order(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent, item):
+
+def insert_order(cursor, quantity, product_name, product_price, transaction_date, transaction_time, location_name, payment_method, total_spent):
     
-    product_id = get_product_id(cursor, item[0])
-    transaction_id = get_transaction_id(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent)
-    check_sql = """
-        SELECT 1 FROM Orders 
-        WHERE transaction_id = %s AND product_id = %s
-    """
-    cursor.execute(check_sql, (transaction_id, product_id))
-    if cursor.fetchone() is not None:
-        return None  # Exit the function 
-
-    # Insert the order 
-    insert_sql = """
-        INSERT INTO Orders (transaction_id, product_id) 
-        VALUES (%s, %s)
+    transaction_id = insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent)
+    
+    product_id = insert_product(cursor, product_name, product_price)
+        
+    cursor.execute("SELECT order_id FROM Orders WHERE transaction_id = %s AND product_id = %s", (transaction_id, product_id))
+    existing_order = cursor.fetchone()
+        
+    if existing_order:
+        return existing_order[0]
+        
+    cursor.execute("""
+        INSERT INTO Orders (transaction_id, product_id, quantity) 
+        VALUES (%s, %s, %s) 
         RETURNING order_id;
-    """
-    cursor.execute(insert_sql, (transaction_id, product_id))
+        """, (transaction_id, product_id, quantity))
+
     order_id = cursor.fetchone()[0]
     return order_id
-
-# Function to process and insert orders
+    
 def process_orders(cursor, transformed_data):
-    order_ids = []
-    for data_dict in transformed_data:
-        try:
-            # extracting transaction  from the data dictionary
-            transaction_date = data_dict['transaction_date']
-            transaction_time = data_dict['transaction_time']
-            location_name = data_dict['location']
-            payment_method = data_dict['payment_method']
-            total_spent = float(data_dict['total_spent'])
-
-
-            for item in data_dict['items']:
-                insert_order(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent, item)
-
-
-        except KeyError as e:
-            print(f"Missing key {str(e)}, skipping entry: {data_dict}")
-            continue  
-
-        except Exception as e:
-            print(f"Error inserting order: {str(e)}")
-            continue
-
+    for data_dict in transformed_data: 
+        product_name = data_dict['product_name']
+        product_price = data_dict['product_price']
+        quantity = data_dict['quantity']
+        transaction_date = data_dict['transaction_date']
+        transaction_time = data_dict['transaction_time']
+        location_name = data_dict['location']
+        payment_method = data_dict['payment_method']
+        total_spent = float(data_dict['total_spent'])
+        
+        insert_order(cursor, quantity, product_name, product_price, transaction_date, transaction_time, location_name, payment_method, total_spent)
+    
     cursor.connection.commit()
-    return order_ids
+
+
 
 if __name__ == '__main__':
-    # Establish a database connection
     connection = db_connection.setup_db_connection()
 
     if connection:
-        cursor = connection.cursor()
-        
-    
-        leeds_data = csv_transform.csv_to_list('leeds.csv')
-        chesterfield_data = csv_transform.csv_to_list('chesterfield_25-08-2021_09-00-00.csv')
-        combined_data = leeds_data + chesterfield_data  
-
-        if combined_data:
+        try:
+            cursor = connection.cursor() 
             
-            transformed_data = csv_transform.remove_sensitive_data(combined_data)
-            transformed_data = csv_transform.split_date_and_time(transformed_data)
-            transformed_data = csv_transform.split_items_into_list(transformed_data)
-
+            leeds_data = csv_transform.csv_to_list('leeds.csv')
+            chesterfield_data = csv_transform.csv_to_list('chesterfield_25-08-2021_09-00-00.csv')
+            combined_data = leeds_data + chesterfield_data  
             
-            order_ids = process_orders(cursor, transformed_data)
-            print(f"Inserted order IDs: {order_ids}")
+            if combined_data:
+                transformed_data = csv_transform.remove_sensitive_data(combined_data)
+                transformed_data = csv_transform.split_date_and_time(transformed_data)
+                transformed_data = csv_transform.split_items_and_count_quantity(transformed_data)
 
-        cursor.close()  
-        connection.close()
+                process_orders(cursor, transformed_data)
+                
+            connection.commit()
+            
+        except Exception as e:
+            connection.rollback()
+            print(f"Error: {e}")
+            
+        finally:
+            cursor.close()
+            connection.close()

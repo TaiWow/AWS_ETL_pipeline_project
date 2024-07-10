@@ -1,10 +1,13 @@
-import csv
 
-# Extract
+import csv
+from datetime import datetime
+from collections import Counter
+
+
 
 def csv_to_list(path):
     data_list = []
-    column_names  = ['date_time', 'location', 'customer_name', 'items', 'total_amount', 'payment_method', 'card_number']
+    column_names = ['date_time', 'location', 'customer_name', 'items', 'total_spent', 'payment_method', 'card_number']
 
     with open(path, 'r') as file:
         csv_file = csv.DictReader(file, fieldnames=column_names)
@@ -12,138 +15,92 @@ def csv_to_list(path):
             data_list.append(row)
     return data_list
 
-
 def remove_sensitive_data(list_of_dicts):
-    # Initialize an empty list for transformed data
     transformed_data = []
     for data_dict in list_of_dicts:
-
-        # Create new dictionary and append new dictionary without the sensitive data like name and card details
         transformed_data.append({
             'date_time': data_dict['date_time'],
             'location': data_dict['location'],
             'items': data_dict['items'],
             'total_spent': data_dict['total_spent'],
             'payment_method': data_dict['payment_method']
-
         })
-    
     return transformed_data
 
+
+
 def split_date_and_time(list_of_dicts):
-    # Initialize an empty list for transformed data
     transformed_data = []
     for data_dict in list_of_dicts:
-        
         date_time = data_dict['date_time']
         transaction_date, transaction_time = date_time.split(' ', 1)
-
-        # Create new dictionary and append new dictionary without the sensitive data like name and card details
+        
+        # Convert transaction_date to YYYY-MM-DD format
+        transaction_date = datetime.strptime(transaction_date, '%d/%m/%Y').strftime('%Y-%m-%d')
+        
         transformed_data.append({
+            'date_time': date_time,  # Keep original for reference
             'transaction_date': transaction_date,
             'transaction_time': transaction_time,
             'location': data_dict['location'],
             'items': data_dict['items'],
-            'total_spent': data_dict['total_spent'],
+            'total_spent': data_dict['total_spent'],  # Corrected key name here
             'payment_method': data_dict['payment_method']
-
         })
-    
     return transformed_data
 
-def split_items_into_list(list_of_dicts):
-    # Initialize an empty list for transformed data
+
+def split_items_and_count_quantity(list_of_dicts):
     transformed_data = []
     for data_dict in list_of_dicts:
-        # Split the product items strings into individual lists
         items = data_dict['items'].split(',')
-        item_list  =[]
-        for item in items:
-            
-            # Split the items into product and price
-            product_name, product_price = item.rsplit(' - ', 1)
-          
-            product_name = product_name.strip()  # Remove trailing spaces
-          
-            product_price = float(product_price.strip())  # Strip spaces and convert string to float
-            item_list.append((product_name,product_price))  
-
-        # Create new dictionary and append new dictionary without the sensitive data like name and card details
-        transformed_data.append({
-            'transaction_date': data_dict['transaction_date'],
-            'transaction_time': data_dict['transaction_time'],
-            'location': data_dict['location'],
-            'items': item_list,
-            'total_amount': data_dict['total_amount'],
-            'payment_method': data_dict['payment_method']
-
-        }) 
-
-    return transformed_data  
-
-# def transform_data(list_of_dicts):
-#     # Initialize an empty list for transformed data
-#     transformed_data = []
-#     for data_dict in list_of_dicts:
-#         # Extract the transaction time, location, and payment method from list_of_dicts
-#         date_time = data_dict['date_time']
-#         transaction_date, transaction_time = date_time.split(' ', 1)
-#         location = data_dict['location']
-#         payment_method = data_dict['payment_method']
-#         total_amount = data_dict['total_amount']
+        item_counts = Counter()
+        item_list = []
         
-#         # Split the product items strings into individual lists
-#         items = data_dict['items'].split(',')
-#         item_list  =[]
-#         for item in items:
-            
-            
-#             # Split the items into product and price
-#             product_name, product_price = item.rsplit(' - ', 1)
-          
-#             product_name = product_name.strip()  # Remove trailing spaces
-          
-#             product_price = float(product_price.strip())  # Strip spaces and convert string to float
-#             item_list.append((product_name,product_price))
-            
-#             # Create new dictionary and append new dictionary with transformed data
-#         transformed_data.append({
-#             'transaction_date': transaction_date,
-#             'transaction_time': transaction_time,
-#             'location': location,
-#             'items': item_list,
-#             'payment_method': payment_method,
-#             'total_amount': total_amount
-
-#         })
-#     return transformed_data
+        for item in items:
+            product_name, product_price = item.rsplit(' - ', 1)
+            product_name = product_name.strip()
+            product_price = float(product_price.strip())
+            item_counts[product_name] += 1
+            item_list.append((product_name, product_price))
+        
+        for product_name, product_price in item_list:
+            transformed_data.append({
+                'transaction_date': data_dict['transaction_date'],
+                'transaction_time': data_dict['transaction_time'],
+                'location': data_dict['location'],
+                'product_name': product_name,
+                'product_price': product_price,
+                'quantity': item_counts[product_name],
+                'total_spent': float(data_dict['total_spent']),  
+                'payment_method': data_dict['payment_method']
+            })
+    return transformed_data
 
 def print_transformed_data(transformed_data):
     for entry in transformed_data:
         print(f"Transaction Date: {entry['transaction_date']}")
         print(f"Transaction Time: {entry['transaction_time']}")
         print(f"Location: {entry['location']}")
-        for product_name, product_price in entry['items']:
-            print(f"Products: {product_name}, {product_price}")
+        print(f"Product Name: {entry['product_name']}")
+        print(f"Product Price: {entry['product_price']}")
+        print(f"Quantity: {entry['quantity']}")
+        print(f"Total Spent: {entry['total_spent']}")
         print(f"Payment Method: {entry['payment_method']}")
-        print(f"Total Amount: {entry['total_amount']}")
         print("-" * 30)
 
+ 
+    
 if __name__ == '__main__':
     leeds_data = csv_to_list('leeds.csv')
-    #chesterfield_data = csv_to_list('chesterfield_25-08-2021_09-00-00.csv')
-    
-    transformed_data = remove_sensitive_data(leeds_data)
+    chesterfield_data = csv_to_list('chesterfield_25-08-2021_09-00-00.csv')
+
+    combined_data = leeds_data + chesterfield_data
+
+    transformed_data = remove_sensitive_data(combined_data)
     transformed_data = split_date_and_time(transformed_data)
-    transformed_data = split_items_into_list(transformed_data)
-    
-    #transformed_chesterfield_data = transform_data(chesterfield_data)
-    
-    print("Leeds Data:")
-    print_transformed_data(transformed_data)
-    
-    #print("Chesterfield Data:")
-    #print_transformed_data(transformed_chesterfield_data)
+    transformed_data = split_items_and_count_quantity(transformed_data)
 
  
-
+    print_transformed_data(transformed_data)
+    

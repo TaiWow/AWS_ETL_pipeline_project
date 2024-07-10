@@ -25,7 +25,7 @@ def perform_etl():
             # Applied transformation steps
             transformed_data = csv_transform.remove_sensitive_data(combined_data)
             transformed_data = csv_transform.split_date_and_time(transformed_data)
-            transformed_data = csv_transform.split_items_into_list(transformed_data)
+            transformed_data = csv_transform.split_items_and_count_quantity(transformed_data)
 
             # Process and insert the transformed data into the database
             process_products_list(cursor, transformed_data)
