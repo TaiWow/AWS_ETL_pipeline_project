@@ -14,7 +14,7 @@ s3 = boto3.client('s3')
 
 ssm_client = boto3.client('ssm', region_name='eu-west-1') #added region due to NoRegionError
 
-ssm_env_var_name = 'nubi_redshift_settings'
+ssm_env_var_name = 'SSM_PARAMETER_NAME'
 
 
 def lambda_handler(event, context):
