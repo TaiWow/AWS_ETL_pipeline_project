@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS Orders (
     order_id BIGINT  IDENTITY(1,1) PRIMARY KEY,
     transaction_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
+    quantity BIGINT NOT NULL
     FOREIGN KEY (transaction_id) REFERENCES Transactions(transaction_id),
     FOREIGN KEY (product_id) REFERENCES Products(product_id)
 );
