@@ -1,13 +1,22 @@
 import boto3
 import csv
+import json
 from datetime import datetime
 from collections import Counter
 
 s3 = boto3.client('s3')
-
 ssm_client = boto3.client('ssm', region_name='eu-west-1') #added region due to NoRegionError
-
+sqs = boto3.client('sqs')
 ssm_env_var_name = 'SSM_PARAMETER_NAME'
+
+queue_url = 'https://sqs.eu-west-1.amazonaws.com/992382716453/nubi-queue'
+
+def send_message_to_sqs(transformed_data):
+    response = sqs.send_message(
+        QueueUrl=queue_url,
+        MessageBody=json.dumps(transformed_data)
+    )
+    print(f'Message sent to SQS: {response}')
 
 def lambda_handler(event, context):
     for record in event['Records']:
@@ -23,7 +32,9 @@ def lambda_handler(event, context):
     transformed_data = split_date_and_time(transformed_data)
     transformed_data = split_items_and_count_quantity(transformed_data)
     
-    print('Lambda extract and tranformed processing completed.')
+    send_message_to_sqs(transformed_data)
+
+    print('Lambda extract and transformed processing completed.')
     
     return {
         'statusCode': 200,

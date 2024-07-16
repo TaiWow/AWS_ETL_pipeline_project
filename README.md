@@ -1,7 +1,7 @@
 # Final-project
 ## About
 
-This project is providing a service to *Super Cafe* in which we, **Nubi**, will Extract, Transform and Load data provided by the client into a database. Next...
+This project is providing a service to *Super Cafe* in which we, **Nubi**, will Extract, Transform and Load data provided by the client into both a local and online database. Utilising range of AWS services such as S3, EC2, Lambda and Redshift we will be running the ETL in the cloud. We will then be presenting our findings from the data in Grafana, a data visualising tool, to provide Super Cafe with a dashboard that will provide a comprehensive insight into their business data.
 
 ## Elevator pitch:
 *FOR* the super cafe owner 
@@ -182,3 +182,7 @@ Graphs and metrics for our Lambda - e.g. how many time it ran, how long it took,
 - Select the redshift cluster in "Cluster Identifier"
 - Add your team's database user and database name
 - You can now create dashboards by using the data from your Redshift database, using SQL.
+
+# Sprint 4 
+
+Moving into Sprint 4, we have applied all the setup from Sprint 3 and made a start on our dashboard in Grafana. By presenting data in a range of forms and structures we are able to provide Super Cafe with detials on their business and insights to answer any quetions they may need answering.
