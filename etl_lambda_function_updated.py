@@ -1,13 +1,10 @@
 import boto3
 import csv
 from datetime import datetime
-from collections import Counter
 import os
 import psycopg2 as psy
-import boto3
 import json
-
-
+from collections import Counter
 
 
 s3 = boto3.client('s3')
@@ -18,6 +15,7 @@ ssm_env_var_name = 'SSM_PARAMETER_NAME'
 
 
 def lambda_handler(event, context):
+    
     for record in event['Records']:
         bucket_name = record['s3']['bucket']['name']
         object_key = record['s3']['object']['key']
@@ -33,13 +31,12 @@ def lambda_handler(event, context):
     transformed_data = split_date_and_time(transformed_data)
     transformed_data = split_items_and_count_quantity(transformed_data)
 
-    curr = None
+    cur = None
     conn = None
-
 
     try:
 
-        nubi_redshift_settings = os.environ[ssm_env_var_name] or 'NOT_SET'
+        nubi_redshift_settings = os.environ[ssm_env_var_name]
         print(f'lambda_handler: nubi_redshift_settings={nubi_redshift_settings} from ssm_env_var_name={ssm_env_var_name}')
 
         # connection
@@ -66,6 +63,7 @@ def lambda_handler(event, context):
         if conn:
             conn.close()
        
+        
 def get_ssm_param(param_name):
     print(f'get_ssm_param: getting param_name={param_name}')
     parameter_details = ssm_client.get_parameter(Name=param_name)
@@ -101,14 +99,14 @@ def open_sql_database_connection_and_cursor(redshift_details):
         print(f'open_sql_database_connection_and_cursor: failed to open connection: {ex}')
         raise ex
 
-def csv_to_list(path):
+def csv_to_list(csv_file):
     data_list = []
     column_names = ['date_time', 'location', 'customer_name', 'items', 'total_spent', 'payment_method', 'card_number']
 
-    with open(path, 'r') as file:
-        csv_file = csv.DictReader(file, fieldnames=column_names)
-        for row in csv_file:
-            data_list.append(row)
+    
+    csv_reader = csv.DictReader(csv_file.splitlines(),fieldnames=column_names)
+    for row in csv_reader:
+        data_list.append(row)
     return data_list
 
 def remove_sensitive_data(list_of_dicts):
@@ -178,8 +176,8 @@ def insert_location(cursor, location_name):
         return existing_location[0]
         
     cursor.execute("""
-        INSERT INTO location (location_name) VALUES (%s)
-        RETURNING location_id;
+        INSERT INTO location (location_name) VALUES (%s);
+        SELECT location_id FROM Location ORDER BY location_id DESC;
     """, (location_name,))
     
     location_id = cursor.fetchone()[0]
@@ -201,8 +199,8 @@ def insert_product(cursor, product_name, product_price):
             return existing_product[0]
         
         cursor.execute("""
-            INSERT INTO Products (product_name, product_price) VALUES (%s, %s)
-            RETURNING product_id;
+            INSERT INTO Products (product_name, product_price) VALUES (%s, %s);
+            SELECT product_id FROM Products ORDER BY product_id DESC;
         """, (product_name, product_price))
         
         product_id = cursor.fetchone()[0]
@@ -233,8 +231,8 @@ def insert_transaction(cursor, transaction_date, transaction_time, location_name
     
         insert_sql = """
             INSERT INTO Transactions (transaction_date, transaction_time, location_id, payment_method,total_spent) 
-            VALUES (%s, %s, %s, %s,%s)
-            RETURNING transaction_id;
+            VALUES (%s, %s, %s, %s,%s);
+            SELECT transaction_id FROM Transactions ORDER BY transaction_id DESC;
         """
         cursor.execute(insert_sql, (transaction_date, transaction_time, location_id, payment_method,total_spent))
         transaction_id = cursor.fetchone()[0]
@@ -276,8 +274,8 @@ def insert_order(cursor, quantity, product_name, product_price, transaction_date
         
     cursor.execute("""
         INSERT INTO Orders (transaction_id, product_id, quantity) 
-        VALUES (%s, %s, %s) 
-        RETURNING order_id;
+        VALUES (%s, %s, %s); 
+        SELECT order_id FROM Orders ORDER BY order_id DESC;
         """, (transaction_id, product_id, quantity))
 
     order_id = cursor.fetchone()[0]
@@ -307,6 +305,6 @@ def process_orders(cursor, transformed_data):
         except Exception as e:
             print(f"Error inserting order: {str(e)}")
             continue
-    
+  
 
 
