@@ -35,6 +35,9 @@ Our service ensures customer privacy (names, card number, etc.)
 
 ![database_schema_model](database_schema_model.png)
 
+## ETL Process Diagram
+
+![ETL_Process_Diagram](ETL_Process_Diagram.png)
 
 # Sprint 1 - ETL
 
@@ -186,3 +189,5 @@ Graphs and metrics for our Lambda - e.g. how many time it ran, how long it took,
 # Sprint 4 
 
 Moving into Sprint 4, we have applied all the setup from Sprint 3 and made a start on our dashboard in Grafana. By presenting data in a range of forms and structures we are able to provide Super Cafe with detials on their business and insights to answer any quetions they may need answering.
+
+As displayed at the start, the diagrams present **sales data** and monitor our infrastructure through **EC2** and **Lambda** metrics. Across 2 dashboards, the business will be able to monitor their ETL and view a range of sales data to support business interests.
