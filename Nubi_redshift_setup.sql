@@ -36,3 +36,5 @@ CREATE TABLE IF NOT EXISTS Orders (
     FOREIGN KEY (transaction_id) REFERENCES Transactions(transaction_id),
     FOREIGN KEY (product_id) REFERENCES Products(product_id)
 );
+
+ALTER TABLE Orders ADD CONSTRAINT unique_order UNIQUE (transaction_id, product_id); --- to add an extra layer of protection against duplicates
