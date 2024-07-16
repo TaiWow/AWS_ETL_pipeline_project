@@ -23,7 +23,7 @@ def lambda_handler(event, context):
     transformed_data = split_date_and_time(transformed_data)
     transformed_data = split_items_and_count_quantity(transformed_data)
     
-    print('Lambda processing completed.')
+    print('Lambda extract and tranformed processing completed.')
     
     return {
         'statusCode': 200,
@@ -49,7 +49,7 @@ def remove_sensitive_data(list_of_dicts):
             'total_spent': data_dict['total_spent'],
             'payment_method': data_dict['payment_method']
         })
-    print('Data after remove_sensitive_data:')
+    print('Removed sensitive data:')
     return transformed_data
 
 def split_date_and_time(list_of_dicts):
@@ -68,7 +68,7 @@ def split_date_and_time(list_of_dicts):
             'total_spent': data_dict['total_spent'],
             'payment_method': data_dict['payment_method']
         })
-    print('Data after split_date_and_time:')
+    print('split_date_and_time:')
     return transformed_data
 
 def split_items_and_count_quantity(list_of_dicts):
@@ -96,5 +96,5 @@ def split_items_and_count_quantity(list_of_dicts):
                 'total_spent': float(data_dict['total_spent']),
                 'payment_method': data_dict['payment_method']
             })
-    print('Data after split_items_and_count_quantity:')
+    print('split_items_and_count_quantity:')
     return transformed_data
