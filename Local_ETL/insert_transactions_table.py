@@ -1,6 +1,6 @@
-import csv_transform   
-import db_connection 
-from insert_location_table import insert_location
+import Local_ETL.csv_transform as csv_transform   
+import Local_ETL.db_connection as db_connection 
+from Local_ETL.insert_location_table import insert_location
 
 
 

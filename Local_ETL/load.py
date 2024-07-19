@@ -1,10 +1,10 @@
-import csv_transform
-import db_connection
-from insert_location_table import process_locations
-from insert_product_table import process_products_list
-from insert_transactions_table import process_transactions
-from insert_orders_table import process_orders
-from create_drop_db_tables import create_db_tables
+import Local_ETL.csv_transform as csv_transform
+import Local_ETL.db_connection as db_connection
+from Local_ETL.insert_location_table import process_locations
+from Local_ETL.insert_product_table import process_products_list
+from Local_ETL.insert_transactions_table import process_transactions
+from Local_ETL.insert_orders_table import process_orders
+from Local_ETL.create_drop_db_tables import create_db_tables
 
 def perform_etl():
     # Set up the database connection

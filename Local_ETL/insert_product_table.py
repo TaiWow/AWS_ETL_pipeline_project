@@ -1,29 +1,32 @@
-import  csv_transform
-import  db_connection
+import Local_ETL.csv_transform as csv_transform   
+import Local_ETL.db_connection as db_connection 
 
 
 
-def insert_location(cursor, location_name):
-    cursor.execute("SELECT location_id FROM Location WHERE location_name = %s", (location_name,))
-    existing_location = cursor.fetchone()
+def insert_product(cursor, product_name, product_price):
     
-    if existing_location:
-        return existing_location[0]
+        cursor.execute("SELECT product_id FROM Products WHERE product_name = %s AND product_price = %s", (product_name, product_price))
+        existing_product = cursor.fetchone()
         
-    cursor.execute("""
-        INSERT INTO location (location_name) VALUES (%s)
-        RETURNING location_id;
-    """, (location_name,))
+        if existing_product:
+            return existing_product[0]
+        
+        cursor.execute("""
+            INSERT INTO Products (product_name, product_price) VALUES (%s, %s)
+            RETURNING product_id;
+        """, (product_name, product_price))
+        
+        product_id = cursor.fetchone()[0]
+        return product_id
     
-    location_id = cursor.fetchone()[0]
-    return location_id
-
-def process_locations(cursor, transformed_data):
+def process_products_list(cursor, transformed_data):
     for data_dict in transformed_data:
-        location_name = data_dict['location']
-        insert_location(cursor, location_name)
+        product_name = data_dict['product_name']
+        product_price = data_dict['product_price']
+        insert_product(cursor, product_name, product_price)
     
     cursor.connection.commit()
+
 
 
 if __name__ == '__main__':
@@ -42,10 +45,10 @@ if __name__ == '__main__':
                 transformed_data = csv_transform.split_date_and_time(transformed_data)
                 transformed_data = csv_transform.split_items_and_count_quantity(transformed_data)
 
-                process_locations(cursor, transformed_data)
+                process_products_list(cursor, transformed_data)
                 
             connection.commit()
-            print("Locations updated and executed successfully.")
+            print("Products updated and executed successfully.")
             
         except Exception as e:
             connection.rollback()
@@ -55,4 +58,7 @@ if __name__ == '__main__':
             cursor.close()
             connection.close()
 
-    
+
+
+
+

@@ -1,7 +1,7 @@
-import csv_transform   
-import db_connection 
-from insert_product_table import insert_product
-from insert_transactions_table import insert_transaction  
+import Local_ETL.csv_transform as csv_transform   
+import Local_ETL.db_connection as db_connection 
+from Local_ETL.insert_product_table import insert_product
+from Local_ETL.insert_transactions_table import insert_transaction  
 
 
 

@@ -1,4 +1,4 @@
-import db_connection
+import Local_ETL.db_connection as db_connection
 import psycopg2
 
 
