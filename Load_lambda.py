@@ -3,49 +3,59 @@ import boto3
 import json
 import psycopg2 as psy
 
-
 s3 = boto3.client('s3')
 
 ssm_client = boto3.client('ssm', region_name='eu-west-1') #added region due to NoRegionError
 
 ssm_env_var_name = 'SSM_PARAMETER_NAME'
-
+sqs = boto3.client('sqs')
+queue_url = 'https://sqs.eu-west-1.amazonaws.com/992382716453/nubi-queue'
 
 def lambda_handler(event, context):
-    
-    transformed_data = event['transformed_data']
-
-    cur = None
-    conn = None
-
-    try:
-
-        nubi_redshift_settings = os.environ[ssm_env_var_name]
-        print(f'lambda_handler: nubi_redshift_settings={nubi_redshift_settings} from ssm_env_var_name={ssm_env_var_name}')
-
-        # connection
-        redshift_details = get_ssm_param(nubi_redshift_settings)
-        conn, cur = open_sql_database_connection_and_cursor(redshift_details)
+    for record in event['Records']:
+        cur = None
+        conn = None
+        try:
+            # Process SQS message
+            transformed_data = json.loads(record['body'])
+            
+            # connection
+            nubi_redshift_settings = os.environ['SSM_PARAMETER_NAME']
+            redshift_details = get_ssm_param(nubi_redshift_settings)
+            
+            conn, cur = open_sql_database_connection_and_cursor(redshift_details)
+            
+            # load data
+            process_products_list(cur, transformed_data)
+            process_locations(cur, transformed_data)
+            process_transactions(cur, transformed_data)
+            process_orders(cur, transformed_data)
+            
+            # Commit changes to database
+            conn.commit()
+            
+            # Delete SQS message
+            sqs.delete_message(
+                QueueUrl=queue_url,
+                ReceiptHandle=record['receiptHandle']
+            )
+            
+            print('Processing and deletion completed successfully.')
         
-        # load data
-        process_products_list(cur, transformed_data)
-        process_locations(cur, transformed_data)
-        process_transactions(cur, transformed_data)
-        process_orders(cur, transformed_data)
+        except Exception as whoopsy:
+            print(f'lambda_handler: failure, error={whoopsy}')
+            continue
+        
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
 
-        print(f'lambda_handler: done')
-
-    except Exception as whoopsy:
-        # ...exception reporting
-        print(f'lambda_handler: failure, error=${whoopsy}')
-        raise whoopsy
-    
-    finally:
-        # Ensure cursor and connection are closed
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Data Loaded')
+    }
 
 def get_ssm_param(param_name):
     parameter_details = ssm_client.get_parameter(Name=param_name)
