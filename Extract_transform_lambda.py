@@ -1,16 +1,14 @@
-import boto3
-import json
+import io
 import csv
+import json
+import boto3
 from datetime import datetime
 from collections import Counter
 
 s3 = boto3.client('s3')
-
-ssm_client = boto3.client('ssm', region_name='eu-west-1') #added region due to NoRegionError
-
-ssm_env_var_name = 'SSM_PARAMETER_NAME'
-
 sqs = boto3.client('sqs')
+
+output_bucket_name = 'nubi-bucket-2'
 queue_url = 'https://sqs.eu-west-1.amazonaws.com/992382716453/nubi-queue'
 
 def lambda_handler(event, context):
@@ -23,16 +21,12 @@ def lambda_handler(event, context):
         csv_file = response['Body'].read().decode('utf-8')
     
     data_list = csv_to_list(csv_file)
-    transformed_data = remove_sensitive_data(data_list)
-    transformed_data = split_date_and_time(transformed_data)
-    transformed_data = split_items_and_count_quantity(transformed_data)
+    transformed_data = transform_data(data_list)
     
-    print('Lambda extract and tranformed processing completed.')
+    s3_object_key = save_transformed_data_to_s3_as_csv(transformed_data, object_key)
+    send_sqs_message(s3_object_key)
     
-    sqs.send_message(
-         QueueUrl=queue_url,
-         MessageBody=json.dumps(transformed_data)
-     )
+    print('Lambda extract and transform processing completed.')
     
     return {
         'statusCode': 200,
@@ -48,41 +42,13 @@ def csv_to_list(csv_file):
         data_list.append(row)
     return data_list
 
-def remove_sensitive_data(list_of_dicts):
+def transform_data(data_list):
     transformed_data = []
-    for data_dict in list_of_dicts:
-        transformed_data.append({
-            'date_time': data_dict['date_time'],
-            'location': data_dict['location'],
-            'items': data_dict['items'],
-            'total_spent': data_dict['total_spent'],
-            'payment_method': data_dict['payment_method']
-        })
-    print('Removed sensitive data:')
-    return transformed_data
-
-def split_date_and_time(list_of_dicts):
-    transformed_data = []
-    for data_dict in list_of_dicts:
+    for data_dict in data_list:
         date_time = data_dict['date_time']
         transaction_date, transaction_time = date_time.split(' ', 1)
         transaction_date = datetime.strptime(transaction_date, '%d/%m/%Y').strftime('%Y-%m-%d')
         
-        transformed_data.append({
-            'date_time': date_time,
-            'transaction_date': transaction_date,
-            'transaction_time': transaction_time,
-            'location': data_dict['location'],
-            'items': data_dict['items'],
-            'total_spent': data_dict['total_spent'],
-            'payment_method': data_dict['payment_method']
-        })
-    print('split_date_and_time:')
-    return transformed_data
-
-def split_items_and_count_quantity(list_of_dicts):
-    transformed_data = []
-    for data_dict in list_of_dicts:
         items = data_dict['items'].split(',')
         item_counts = Counter()
         item_list = []
@@ -96,8 +62,8 @@ def split_items_and_count_quantity(list_of_dicts):
         
         for product_name, product_price in item_list:
             transformed_data.append({
-                'transaction_date': data_dict['transaction_date'],
-                'transaction_time': data_dict['transaction_time'],
+                'transaction_date': transaction_date,
+                'transaction_time': transaction_time,
                 'location': data_dict['location'],
                 'product_name': product_name,
                 'product_price': product_price,
@@ -105,5 +71,28 @@ def split_items_and_count_quantity(list_of_dicts):
                 'total_spent': float(data_dict['total_spent']),
                 'payment_method': data_dict['payment_method']
             })
-    print('split_items_and_count_quantity:')
     return transformed_data
+
+def save_transformed_data_to_s3_as_csv(transformed_data, original_key):
+    output = io.StringIO()
+    csv_writer = csv.DictWriter(output, fieldnames=transformed_data[0].keys())
+    csv_writer.writeheader()
+    csv_writer.writerows(transformed_data)
+    csv_data = output.getvalue()
+    
+    new_object_key = f'transformed/{original_key.split("/")[-1].replace(".csv", "_transformed.csv")}'
+    
+    s3.put_object(Bucket=output_bucket_name, Key=new_object_key, Body=csv_data)
+    print(f'Transformed data saved as CSV to {output_bucket_name}/{new_object_key}')
+    return new_object_key
+
+def send_sqs_message(s3_object_key):
+    message_body = {
+        'bucket': output_bucket_name,
+        'key': s3_object_key
+    }
+    sqs.send_message(
+        QueueUrl=queue_url,
+        MessageBody=json.dumps(message_body)
+    )
+    print(f'SQS message sent for {s3_object_key}')

@@ -1,6 +1,7 @@
 import os
 import boto3
 import json
+import csv
 import psycopg2 as psy
 
 s3 = boto3.client('s3')
@@ -13,11 +14,20 @@ queue_url = 'https://sqs.eu-west-1.amazonaws.com/992382716453/nubi-queue'
 
 def lambda_handler(event, context):
     for record in event['Records']:
+        bucket_name = record['s3']['bucket']['name']
+        object_key = record['s3']['object']['key']
+        
+        
+    
         cur = None
         conn = None
         try:
             # Process SQS message
-            transformed_data = json.loads(record['body'])
+            response = s3.get_object(Bucket=bucket_name, Key=object_key)
+            csv_file = response['Body'].read().decode('utf-8')            
+        
+            transformed_data= csv_to_list(csv_file)
+           
             
             # connection
             nubi_redshift_settings = os.environ['SSM_PARAMETER_NAME']
@@ -26,19 +36,19 @@ def lambda_handler(event, context):
             conn, cur = open_sql_database_connection_and_cursor(redshift_details)
             
             # load data
-            process_products_list(cur, transformed_data)
-            process_locations(cur, transformed_data)
-            process_transactions(cur, transformed_data)
-            process_orders(cur, transformed_data)
+            insert_products(cur, transformed_data)
+            insert_locations(cur, transformed_data)
+            insert_transactions(cur, transformed_data)
+            insert_orders(cur, transformed_data)
             
             # Commit changes to database
             conn.commit()
             
             # Delete SQS message
-            sqs.delete_message(
-                QueueUrl=queue_url,
-                ReceiptHandle=record['receiptHandle']
-            )
+           # sqs.delete_message(
+               # QueueUrl=queue_url,
+                #ReceiptHandle=record['receiptHandle']
+            
             
             print('Processing and deletion completed successfully.')
         
@@ -72,132 +82,103 @@ def open_sql_database_connection_and_cursor(redshift_details):
     cursor = db_connection.cursor()
     return db_connection, cursor
 
-def process_products_list(cursor, transformed_data):
+def csv_to_list(csv_file):
+    data_list = []
+    csv_reader = csv.DictReader(csv_file.splitlines())
+    for row in csv_reader:
+        data_list.append(row)
+    return data_list
+
+
+
+
+def fetch_location_id(cursor, location_name):
+    cursor.execute("SELECT location_id FROM Location WHERE location_name = %s", (location_name,))
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+
+def fetch_product_id(cursor, product_name, product_price):
+    cursor.execute("SELECT product_id FROM Products WHERE product_name = %s AND product_price = %s", (product_name, product_price))
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+def fetch_transaction_id(cursor, transaction_date, transaction_time, location_id):
+    cursor.execute("""
+        SELECT transaction_id 
+        FROM Transactions 
+        WHERE transaction_date = %s 
+        AND transaction_time = %s 
+        AND location_id = %s
+        """, (transaction_date, transaction_time, location_id))
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+def insert_locations(cursor, transformed_data):
+    locations_to_insert = []
+    for data_dict in transformed_data:
+        location_name = data_dict['location']
+        if location_name:
+            cursor.execute("SELECT location_id FROM Location WHERE location_name = %s", (location_name,))
+            if cursor.fetchone() is None and (location_name,) not in locations_to_insert:
+                locations_to_insert.append((location_name,))
+    
+    if locations_to_insert:
+        cursor.executemany("INSERT INTO Location (location_name) VALUES (%s)", locations_to_insert)
+        print("insert_location completed sucessfully")
+        
+def insert_products(cursor, transformed_data):
+    products_to_insert = []
     for data_dict in transformed_data:
         product_name = data_dict['product_name']
         product_price = data_dict['product_price']
-        insert_product(cursor, product_name, product_price)
+        cursor.execute("SELECT product_id FROM Products WHERE product_name = %s AND product_price = %s", (product_name, product_price))
+        if cursor.fetchone() is None and (product_name, product_price) not in products_to_insert:
+            products_to_insert.append((product_name, product_price))
     
-    cursor.connection.commit()
+    if products_to_insert:
+        cursor.executemany("INSERT INTO Products (product_name, product_price) VALUES (%s, %s)", products_to_insert)
+        print("insert_products completed sucessfully")
 
-def insert_product(cursor, product_name, product_price):
-    cursor.execute("SELECT product_id FROM Products WHERE product_name = %s AND product_price = %s", (product_name, product_price))
-    existing_product = cursor.fetchone()
-    
-    if existing_product:
-        return existing_product[0]
-    
-    cursor.execute("""
-        INSERT INTO Products (product_name, product_price) VALUES (%s, %s);
-        SELECT product_id FROM Products ORDER BY product_id DESC;
-    """, (product_name, product_price))
-    
-    product_id = cursor.fetchone()[0]
-    return product_id
-
-def process_locations(cursor, transformed_data):
+def insert_transactions(cursor, transformed_data):
+    transactions_to_insert = []
     for data_dict in transformed_data:
         location_name = data_dict['location']
-        insert_location(cursor, location_name)
+        transaction_date = data_dict['transaction_date']
+        transaction_time = data_dict['transaction_time']
+        payment_method = data_dict['payment_method']
+        total_spent = data_dict['total_spent']
+        
+        location_id = fetch_location_id(cursor, location_name)
+        if location_id:
+            transaction_id = fetch_transaction_id(cursor, transaction_date, transaction_time, location_id)
+            if transaction_id is None and (transaction_date, transaction_time, location_id, payment_method, total_spent) not in transactions_to_insert:
+                transactions_to_insert.append((transaction_date, transaction_time, location_id, payment_method, total_spent))
     
-    cursor.connection.commit()
+    if transactions_to_insert:
+        cursor.executemany("INSERT INTO Transactions (transaction_date, transaction_time, location_id, payment_method, total_spent) VALUES (%s, %s, %s, %s, %s)", transactions_to_insert)
+        print("insert_transaction completed sucessfully")
 
-def insert_location(cursor, location_name):
-    cursor.execute("SELECT location_id FROM Location WHERE location_name = %s", (location_name,))
-    existing_location = cursor.fetchone()
-    
-    if existing_location:
-        return existing_location[0]
-    
-    cursor.execute("""
-        INSERT INTO location (location_name) VALUES (%s);
-        SELECT location_id FROM Location ORDER BY location_id DESC;
-    """, (location_name,))
-    
-    location_id = cursor.fetchone()[0]
-    return location_id
-
-def process_transactions(cursor, transformed_data):
+def insert_orders(cursor, transformed_data):
+    orders_to_insert = []
     for data_dict in transformed_data:
-        try:
-            transaction_date = data_dict['transaction_date']
-            transaction_time = data_dict['transaction_time']
-            location_name = data_dict['location']
-            payment_method = data_dict['payment_method']
-            total_spent = float(data_dict['total_spent'])
+        product_name = data_dict['product_name']
+        product_price = data_dict['product_price']
+        transaction_date = data_dict['transaction_date']
+        transaction_time = data_dict['transaction_time']
+        quantity = data_dict['quantity']
         
-            insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent)
-            cursor.connection.commit()
+        product_id = fetch_product_id(cursor, product_name, product_price)
+        location_id = fetch_location_id(cursor, data_dict['location'])
+        transaction_id = fetch_transaction_id(cursor, transaction_date, transaction_time, location_id)
         
-        except KeyError as e:
-            print(f"Missing transaction data, skipping entry: {str(e)}")
-            continue  # Skip the current transaction
-        
-        except Exception as e:
-            print(f"Error inserting transaction: {str(e)}")
-            continue  # Skip the current transaction
-
-def insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent):
-    location_id = insert_location(cursor, location_name)
+        if product_id and transaction_id:
+            cursor.execute("SELECT order_id FROM Orders WHERE transaction_id = %s AND product_id = %s", (transaction_id, product_id))
+            if cursor.fetchone() is None and (transaction_id, product_id, quantity) not in orders_to_insert:
+                orders_to_insert.append((transaction_id, product_id, quantity))
     
-    check_sql = """
-        SELECT transaction_id FROM Transactions 
-        WHERE transaction_date = %s AND transaction_time = %s AND location_id = %s AND payment_method = %s AND total_spent = %s 
-    """
-    cursor.execute(check_sql, (transaction_date, transaction_time, location_id, payment_method, total_spent))
-    existing_transaction = cursor.fetchone()
-    
-    if existing_transaction:
-        return existing_transaction[0]
-    
-    insert_sql = """
-        INSERT INTO Transactions (transaction_date, transaction_time, location_id, payment_method,total_spent) 
-        VALUES (%s, %s, %s, %s,%s);
-        SELECT transaction_id FROM Transactions ORDER BY transaction_id DESC;
-    """
-    cursor.execute(insert_sql, (transaction_date, transaction_time, location_id, payment_method,total_spent))
-    transaction_id = cursor.fetchone()[0]
-    return transaction_id
+    if orders_to_insert:
+        cursor.executemany("INSERT INTO Orders (transaction_id, product_id, quantity) VALUES (%s, %s, %s)", orders_to_insert)
+        print("insert_order completed sucessfully")
 
-def process_orders(cursor, transformed_data):
-    for data_dict in transformed_data:
-        try:
-            product_name = data_dict['product_name']
-            product_price = data_dict['product_price']
-            quantity = data_dict['quantity']
-            transaction_date = data_dict['transaction_date']
-            transaction_time = data_dict['transaction_time']
-            location_name = data_dict['location']
-            payment_method = data_dict['payment_method']
-            total_spent = float(data_dict['total_spent'])
-        
-            insert_order(cursor, quantity, product_name, product_price, transaction_date, transaction_time, location_name, payment_method, total_spent)
-            cursor.connection.commit()
-        
-        except KeyError as e:
-            print(f"Missing key {str(e)}, skipping entry: {data_dict}")
-            continue  # Skip the current order
-        
-        except Exception as e:
-            print(f"Error inserting order: {str(e)}")
-            continue  # Skip the current order
 
-def insert_order(cursor, quantity, product_name, product_price, transaction_date, transaction_time, location_name, payment_method, total_spent):
-    transaction_id = insert_transaction(cursor, transaction_date, transaction_time, location_name, payment_method, total_spent)
-    
-    product_id = insert_product(cursor, product_name, product_price)
-        
-    cursor.execute("SELECT order_id FROM Orders WHERE transaction_id = %s AND product_id = %s", (transaction_id, product_id))
-    existing_order = cursor.fetchone()
-        
-    if existing_order:
-        return existing_order[0]
-        
-    cursor.execute("""
-        INSERT INTO Orders (transaction_id, product_id, quantity) 
-        VALUES (%s, %s, %s); 
-        SELECT order_id FROM Orders ORDER BY order_id DESC;
-    """, (transaction_id, product_id, quantity))
-
-    order_id = cursor.fetchone()[0]
-    return order_id
