@@ -7,13 +7,15 @@ DROP TABLE IF EXISTS Location CASCADE;
 CREATE TABLE IF NOT EXISTS Products (
     product_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
-    product_price DECIMAL(10, 2) NOT NULL
+    product_price DECIMAL(10, 2) NOT NULL,
+    UNIQUE (product_name, product_price)
 );
  
 -- Create the Location table
 CREATE TABLE IF NOT EXISTS Location (
     location_id BIGINT IDENTITY(1,1)PRIMARY KEY,
     location_name VARCHAR(100) NOT NULL
+    UNIQUE (location_name)
 );
  
 -- Create the Transactions table
@@ -37,4 +39,3 @@ CREATE TABLE IF NOT EXISTS Orders (
     FOREIGN KEY (product_id) REFERENCES Products(product_id)
 );
 
-ALTER TABLE Orders ADD CONSTRAINT unique_order UNIQUE (transaction_id, product_id); --- to add an extra layer of protection against duplicates
