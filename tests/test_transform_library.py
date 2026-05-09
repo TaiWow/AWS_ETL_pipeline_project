@@ -41,19 +41,19 @@ class TestTransformLibrary(unittest.TestCase):
     def test_split_items_and_count_quantity_counts_duplicate_items(self):
         rows = split_date_and_time(remove_sensitive_data(csv_text_to_list(SAMPLE_CSV_LINE)))
         transformed = split_items_and_count_quantity(rows)
-        self.assertEqual(len(transformed), 3)
+        self.assertEqual(len(transformed), 2)
 
         latte_rows = [row for row in transformed if row["product_name"] == "Latte"]
         espresso_rows = [row for row in transformed if row["product_name"] == "Espresso"]
 
-        self.assertEqual(len(latte_rows), 2)
-        self.assertTrue(all(row["quantity"] == 2 for row in latte_rows))
+        self.assertEqual(len(latte_rows), 1)
+        self.assertEqual(latte_rows[0]["quantity"], 2)
         self.assertEqual(len(espresso_rows), 1)
         self.assertEqual(espresso_rows[0]["quantity"], 1)
 
     def test_transform_data_runs_full_pipeline(self):
         transformed = transform_data(csv_text_to_list(SAMPLE_CSV_LINE))
-        self.assertEqual(len(transformed), 3)
+        self.assertEqual(len(transformed), 2)
         self.assertEqual(set(row["product_name"] for row in transformed), {"Latte", "Espresso"})
 
     def test_local_csv_transform_wrapper_reads_file_and_reuses_shared_logic(self):

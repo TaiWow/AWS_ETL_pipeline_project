@@ -59,23 +59,23 @@ def split_items_and_count_quantity(list_of_dicts):
     for data_dict in list_of_dicts:
         items = data_dict['items'].split(',')
         item_counts = Counter()
-        item_list = []
+        item_prices = {}
 
         for item in items:
             product_name, product_price = item.rsplit(' - ', 1)
             product_name = product_name.strip()
             product_price = float(product_price.strip())
             item_counts[product_name] += 1
-            item_list.append((product_name, product_price))
+            item_prices[product_name] = product_price
 
-        for product_name, product_price in item_list:
+        for product_name, quantity in item_counts.items():
             transformed_data.append({
                 'transaction_date': data_dict['transaction_date'],
                 'transaction_time': data_dict['transaction_time'],
                 'location': data_dict['location'],
                 'product_name': product_name,
-                'product_price': product_price,
-                'quantity': item_counts[product_name],
+                'product_price': item_prices[product_name],
+                'quantity': quantity,
                 'total_spent': float(data_dict['total_spent']),
                 'payment_method': data_dict['payment_method'],
             })
@@ -87,4 +87,3 @@ def transform_data(data_list):
     transformed_data = split_date_and_time(transformed_data)
     transformed_data = split_items_and_count_quantity(transformed_data)
     return transformed_data
-
