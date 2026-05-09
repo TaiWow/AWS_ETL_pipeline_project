@@ -61,6 +61,7 @@ class LoadLambdaTests(unittest.TestCase):
         )
 
     def test_insert_locations_batches_unique_new_locations(self):
+        # fetchone results: Leeds missing, York missing, duplicate Leeds already found.
         cursor = FakeCursor([None, None, (1,)])
         transformed_data = [
             {"location": "Leeds"},
@@ -75,6 +76,7 @@ class LoadLambdaTests(unittest.TestCase):
         self.assertEqual([("Leeds",), ("York",)], params)
 
     def test_insert_products_batches_unique_new_products(self):
+        # fetchone results: Coffee missing, Cake missing, duplicate Coffee already found.
         cursor = FakeCursor([None, None, (1,)])
         transformed_data = [
             {"product_name": "Coffee", "product_price": 2.5},
@@ -89,6 +91,7 @@ class LoadLambdaTests(unittest.TestCase):
         self.assertEqual([("Coffee", 2.5), ("Cake", 3.25)], params)
 
     def test_insert_transactions_batches_unique_transactions(self):
+        # fetchone results per row: location exists, transaction missing.
         cursor = FakeCursor([
             (7,), None,
             (7,), None,
@@ -117,6 +120,7 @@ class LoadLambdaTests(unittest.TestCase):
         self.assertEqual([("2021-09-05", "14:30", 7, "Card", 2.5)], params)
 
     def test_insert_orders_batches_unique_orders(self):
+        # fetchone results per row: product exists, location exists, transaction exists, order missing.
         cursor = FakeCursor([
             (10,), (7,), (20,), None,
             (10,), (7,), (20,), None,

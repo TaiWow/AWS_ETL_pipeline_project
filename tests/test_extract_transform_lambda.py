@@ -31,6 +31,8 @@ class ExtractTransformLambdaTests(unittest.TestCase):
         self.assertEqual("Tea - 1.75", rows[1]["items"])
 
     def test_transform_data_splits_dates_and_counts_duplicate_items(self):
+        # The current transform keeps one output row per purchased item while
+        # annotating duplicate products with the total quantity for that product.
         transformed = extract_transform_lambda.transform_data([
             {
                 "date_time": "05/09/2021 14:30",
