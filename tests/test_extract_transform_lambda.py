@@ -30,7 +30,7 @@ class ExtractTransformLambdaTests(unittest.TestCase):
         self.assertEqual("Ada", rows[0]["customer_name"])
         self.assertEqual("Tea - 1.75", rows[1]["items"])
 
-    def test_transform_data_splits_dates_and_counts_duplicate_items(self):
+    def test_transform_data_creates_row_per_item_with_quantity(self):
         # The current transform keeps one output row per purchased item while
         # annotating duplicate products with the total quantity for that product.
         transformed = extract_transform_lambda.transform_data([

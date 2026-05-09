@@ -91,6 +91,7 @@ class LoadLambdaTests(unittest.TestCase):
         self.assertEqual([("Coffee", 2.5), ("Cake", 3.25)], params)
 
     def test_insert_transactions_batches_unique_transactions(self):
+        # Both rows describe the same transaction, so only one insert should be batched.
         # fetchone results per row: location exists, transaction missing.
         cursor = FakeCursor([
             (7,), None,
@@ -120,6 +121,7 @@ class LoadLambdaTests(unittest.TestCase):
         self.assertEqual([("2021-09-05", "14:30", 7, "Card", 2.5)], params)
 
     def test_insert_orders_batches_unique_orders(self):
+        # Both rows describe the same order, so only one insert should be batched.
         # fetchone results per row: product exists, location exists, transaction exists, order missing.
         cursor = FakeCursor([
             (10,), (7,), (20,), None,
