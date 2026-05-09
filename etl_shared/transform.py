@@ -66,7 +66,8 @@ def split_items_and_count_quantity(list_of_dicts):
             product_name = product_name.strip()
             product_price = float(product_price.strip())
             item_counts[product_name] += 1
-            item_prices[product_name] = product_price
+            if product_name not in item_prices:
+                item_prices[product_name] = product_price
 
         for product_name, quantity in item_counts.items():
             transformed_data.append({
