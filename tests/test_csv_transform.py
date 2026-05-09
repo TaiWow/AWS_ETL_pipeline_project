@@ -1,3 +1,4 @@
+import os
 import tempfile
 import unittest
 
@@ -14,6 +15,7 @@ class CsvTransformTests(unittest.TestCase):
         with tempfile.NamedTemporaryFile("w+", delete=False) as temp_file:
             temp_file.write(csv_content)
             temp_file.flush()
+            self.addCleanup(os.unlink, temp_file.name)
             rows = csv_transform.csv_to_list(temp_file.name)
 
         self.assertEqual(2, len(rows))
